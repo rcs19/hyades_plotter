@@ -1,0 +1,439 @@
+DT ice + CH ablator spherical implosion
+c
+c
+c k zones are in r direction, L zones are in z direction
+c circle at r0 z0 extending from r1 to r2, through angle a1 to a2 (measured from negative z axis)
+c start zoning
+geometry 3
+c       l1   l2   r1   r2   ratio 
+mesh   1 161 0.000000e+00  1.534540e-01 1.000000e+00 $Region 1
+mesh 161 475 1.534540e-01  1.589279e-01 1.010300e+00 $Region 2
+mesh 475 581 1.589279e-01  1.700584e-01 1.010200e+00 $Region 3
+mesh 581 1058 1.700584e-01  1.751674e-01 9.920000e-01 $Region 4
+c             l1  l2    reg   dens  tion
+region    1 160   1 6.200000e-04 1.551000e-06
+region  161 474   2 2.530000e-01 1.551000e-06
+region  475 580   3 2.530000e-01 1.551000e-06
+region  581 1057   4 1.040000e+00 1.551000e-06
+c end zoning
+c
+c ss2    # Z  A  frac(normed in code)
+material 1 1 2.014 0.50000
+material 1 1 3.012 0.50000
+material 2 dt
+material 3 dt
+c material 3 1. 1.008  0.5
+material 4 1. 2.014  0.5
+material 4 6. 12.012 0.5
+c
+c EOS DT #1 #2 (can also call EOS/opacity files in directly). SESAME gave very high DT densities in hotspot, so temps too low
+c qeos 1 1.86e9 3.0e-04                    $DT qeos
+eos /work3/clf/rscott/hyades/fpeos/hy_fpeos0815.dat 1 $DT
+eos /work3/clf/rscott/hyades/fpeos/hy_fpeos0815.dat 2 $DT
+eos /work3/clf/rscott/hyades/fpeos/hy_fpeos0815.dat 3 $DT
+c qeos 2 1.86e9 0.253	                 $DT qeos
+c qeos 3 1.86e9 0.253	                 $DT qeos
+c qeos 3 4.42e-10 1.08	                 $CH qeos
+c eos /h2d/EOS-Opacity/SESAME/eos_11.dat 1 $DT
+c eos /h2d/EOS-Opacity/SESAME/eos_11.dat 2 $DT
+c eos /h2d/EOS-Opacity/SESAME/eos_11.dat 3 $DT
+eos /work3/clf/rscott/hyades/fpeos/hy_fpeos0516.dat 4 $CH
+c eos /work3/clf/rad_hydro/hyades/EOS-Opacity/SESAME/eos_32.dat 4 $CH sesame
+c
+c eos extrapolation
+eosxtrp  1  1  2  1  2
+eosxtrp  2  1  2  1  2
+eosxtrp  3  1  2  1  2
+eosxtrp  4  1  2  1  2
+c
+c Opacity
+c Ionisation: 1=none,2=saha,3=Thomas-Fermi,4=average atom, LTE,
+c 5=average atom nLTE,6="full ionisation"
+c
+ioniz 1 4
+ioniz 2 4
+ioniz 3 4
+ioniz 4 4
+c
+c basic laser
+c               um    focal posn
+c ss3
+source laser 0.351 -1058
+c start rays
+c end rays
+c start laser power
+tv 0.000e+00 7.143e+16 $0
+tv 3.576e-11 1.569e+17 $1
+tv 7.152e-11 3.275e+17 $2
+tv 1.073e-10 6.476e+17 $3
+tv 1.430e-10 1.214e+18 $4
+tv 1.788e-10 2.159e+18 $5
+tv 2.146e-10 3.640e+18 $6
+tv 2.503e-10 5.818e+18 $7
+tv 2.861e-10 8.816e+18 $8
+tv 3.218e-10 1.267e+19 $9
+tv 3.576e-10 1.726e+19 $10
+tv 3.934e-10 2.229e+19 $11
+tv 4.291e-10 2.730e+19 $12
+tv 4.649e-10 3.171e+19 $13
+tv 5.006e-10 3.491e+19 $14
+tv 5.364e-10 3.644e+19 $15
+tv 5.722e-10 3.607e+19 $16
+tv 7.116e-09 3.654e+19 $17
+tv 7.143e-09 3.715e+19 $18
+tv 7.170e-09 3.777e+19 $19
+tv 7.197e-09 3.841e+19 $20
+tv 7.224e-09 3.905e+19 $21
+tv 7.251e-09 3.971e+19 $22
+tv 7.278e-09 4.037e+19 $23
+tv 7.305e-09 4.105e+19 $24
+tv 7.332e-09 4.174e+19 $25
+tv 7.359e-09 4.244e+19 $26
+tv 7.386e-09 4.315e+19 $27
+tv 7.413e-09 4.388e+19 $28
+tv 7.440e-09 4.461e+19 $29
+tv 7.467e-09 4.536e+19 $30
+tv 7.494e-09 4.612e+19 $31
+tv 7.521e-09 4.690e+19 $32
+tv 7.548e-09 4.768e+19 $33
+tv 7.575e-09 4.848e+19 $34
+tv 7.602e-09 4.930e+19 $35
+tv 7.629e-09 5.013e+19 $36
+tv 7.656e-09 5.097e+19 $37
+tv 7.683e-09 5.182e+19 $38
+tv 7.710e-09 5.269e+19 $39
+tv 7.737e-09 5.358e+19 $40
+tv 7.764e-09 5.448e+19 $41
+tv 7.791e-09 5.539e+19 $42
+tv 7.818e-09 5.632e+19 $43
+tv 7.845e-09 5.726e+19 $44
+tv 7.872e-09 5.823e+19 $45
+tv 7.899e-09 5.920e+19 $46
+tv 7.926e-09 6.020e+19 $47
+tv 7.953e-09 6.121e+19 $48
+tv 7.980e-09 0.0 $a
+source laser 0.351 -1057
+tv 0.0 0.0 $b
+tv 7.953e-09 0.0 $c
+tv 7.980e-09 6.223e+19 $49
+tv 8.007e-09 6.328e+19 $50
+tv 8.034e-09 6.434e+19 $51
+tv 8.061e-09 6.542e+19 $52
+tv 8.088e-09 6.652e+19 $53
+tv 8.115e-09 6.763e+19 $54
+tv 8.142e-09 6.877e+19 $55
+tv 8.169e-09 6.992e+19 $56
+tv 8.196e-09 7.110e+19 $57
+tv 8.223e-09 7.229e+19 $58
+tv 8.250e-09 7.350e+19 $59
+tv 8.278e-09 7.474e+19 $60
+tv 8.305e-09 7.599e+19 $61
+tv 8.332e-09 7.727e+19 $62
+tv 8.359e-09 7.856e+19 $63
+tv 8.386e-09 7.988e+19 $64
+tv 8.413e-09 8.122e+19 $65
+tv 8.440e-09 8.258e+19 $66
+tv 8.467e-09 8.397e+19 $67
+tv 8.494e-09 8.538e+19 $68
+tv 8.521e-09 8.681e+19 $69
+tv 8.548e-09 8.827e+19 $70
+tv 8.575e-09 8.975e+19 $71
+tv 8.602e-09 9.126e+19 $72
+tv 8.629e-09 9.279e+19 $73
+tv 8.656e-09 9.435e+19 $74
+tv 8.683e-09 9.593e+19 $75
+tv 8.710e-09 9.754e+19 $76
+tv 8.737e-09 9.918e+19 $77
+tv 8.764e-09 1.008e+20 $78
+tv 8.791e-09 1.025e+20 $79
+tv 8.818e-09 1.043e+20 $80
+tv 8.845e-09 1.060e+20 $81
+tv 8.872e-09 1.078e+20 $82
+tv 8.899e-09 1.096e+20 $83
+tv 8.926e-09 1.114e+20 $84
+tv 8.953e-09 1.133e+20 $85
+tv 8.980e-09 1.152e+20 $86
+tv 9.007e-09 1.171e+20 $87
+tv 9.034e-09 1.191e+20 $88
+tv 9.061e-09 1.211e+20 $89
+tv 9.088e-09 1.231e+20 $90
+tv 9.115e-09 1.252e+20 $91
+tv 9.142e-09 1.273e+20 $92
+tv 9.169e-09 1.294e+20 $93
+tv 9.196e-09 1.316e+20 $94
+tv 9.223e-09 1.338e+20 $95
+tv 9.250e-09 1.361e+20 $96
+tv 9.277e-09 1.383e+20 $97
+tv 9.304e-09 1.407e+20 $98
+tv 9.331e-09 1.430e+20 $99
+tv 9.358e-09 1.454e+20 $100
+tv 9.385e-09 1.479e+20 $101
+tv 9.412e-09 1.504e+20 $102
+tv 9.439e-09 1.529e+20 $103
+tv 9.466e-09 1.554e+20 $104
+tv 9.493e-09 1.580e+20 $105
+tv 9.520e-09 1.607e+20 $106
+tv 9.547e-09 1.634e+20 $107
+tv 9.574e-09 1.661e+20 $108
+tv 9.601e-09 1.689e+20 $109
+tv 9.628e-09 1.718e+20 $110
+tv 9.655e-09 1.746e+20 $111
+tv 9.682e-09 1.776e+20 $112
+tv 9.709e-09 1.806e+20 $113
+tv 9.736e-09 1.836e+20 $114
+tv 9.763e-09 1.867e+20 $115
+tv 9.790e-09 1.898e+20 $116
+tv 9.817e-09 1.930e+20 $117
+tv 9.844e-09 1.962e+20 $118
+tv 9.871e-09 1.995e+20 $119
+tv 9.898e-09 2.029e+20 $120
+tv 9.925e-09 2.063e+20 $121
+tv 9.952e-09 2.097e+20 $122
+tv 9.979e-09 2.133e+20 $123
+tv 1.001e-08 2.168e+20 $124
+tv 1.003e-08 2.205e+20 $125
+tv 1.006e-08 2.242e+20 $126
+tv 1.009e-08 2.279e+20 $127
+tv 1.011e-08 2.318e+20 $128
+tv 1.014e-08 2.356e+20 $129
+tv 1.017e-08 2.396e+20 $130
+tv 1.020e-08 2.436e+20 $131
+tv 1.022e-08 2.477e+20 $132
+tv 1.025e-08 2.519e+20 $133
+tv 1.028e-08 2.561e+20 $134
+tv 1.030e-08 2.604e+20 $135
+tv 1.033e-08 2.648e+20 $136
+tv 1.036e-08 2.692e+20 $137
+tv 1.038e-08 2.737e+20 $138
+tv 1.041e-08 2.783e+20 $139
+tv 1.044e-08 2.830e+20 $140
+tv 1.047e-08 2.877e+20 $141
+tv 1.049e-08 2.926e+20 $142
+tv 1.052e-08 2.975e+20 $143
+tv 1.055e-08 3.025e+20 $144
+tv 1.057e-08 3.075e+20 $145
+tv 1.060e-08 3.127e+20 $146
+tv 1.063e-08 3.180e+20 $147
+tv 1.065e-08 3.233e+20 $148
+tv 1.068e-08 3.287e+20 $149
+tv 1.071e-08 3.342e+20 $150
+tv 1.074e-08 3.398e+20 $151
+tv 1.076e-08 3.456e+20 $152
+tv 1.079e-08 3.513e+20 $153
+tv 1.082e-08 3.572e+20 $154
+tv 1.084e-08 3.632e+20 $155
+tv 1.087e-08 3.693e+20 $156
+tv 1.090e-08 3.755e+20 $157
+tv 1.092e-08 3.818e+20 $158
+tv 1.095e-08 3.882e+20 $159
+tv 1.098e-08 3.948e+20 $160
+tv 1.101e-08 4.014e+20 $161
+tv 1.103e-08 4.081e+20 $162
+tv 1.106e-08 4.150e+20 $163
+tv 1.109e-08 4.219e+20 $164
+tv 1.111e-08 4.290e+20 $165
+tv 1.114e-08 4.362e+20 $166
+tv 1.117e-08 4.435e+20 $167
+tv 1.119e-08 4.510e+20 $168
+tv 1.122e-08 4.586e+20 $169
+tv 1.125e-08 4.662e+20 $170
+tv 1.128e-08 4.741e+20 $171
+tv 1.130e-08 4.820e+20 $172
+tv 1.133e-08 4.901e+20 $173
+tv 1.136e-08 4.983e+20 $174
+tv 1.138e-08 5.067e+20 $175
+tv 1.141e-08 5.152e+20 $176
+tv 1.144e-08 5.239e+20 $177
+tv 1.146e-08 5.326e+20 $178
+tv 1.149e-08 5.416e+20 $179
+tv 1.152e-08 5.507e+20 $180
+tv 1.155e-08 5.599e+20 $181
+tv 1.157e-08 5.693e+20 $182
+tv 1.160e-08 5.789e+20 $183
+tv 1.163e-08 5.886e+20 $184
+tv 1.165e-08 5.985e+20 $185
+tv 1.168e-08 6.085e+20 $186
+tv 1.171e-08 6.187e+20 $187
+tv 1.173e-08 6.291e+20 $188
+tv 1.176e-08 6.397e+20 $189
+tv 1.179e-08 6.504e+20 $190
+tv 1.182e-08 6.613e+20 $191
+tv 1.184e-08 6.724e+20 $192
+tv 1.187e-08 6.837e+20 $193
+tv 1.190e-08 6.952e+20 $194
+tv 1.192e-08 7.068e+20 $195
+tv 1.195e-08 7.187e+20 $196
+tv 1.198e-08 7.308e+20 $197
+tv 1.200e-08 7.430e+20 $198
+tv 1.203e-08 7.555e+20 $199
+tv 1.206e-08 7.682e+20 $200
+tv 1.209e-08 7.811e+20 $201
+tv 1.211e-08 7.942e+20 $202
+tv 1.214e-08 8.075e+20 $203
+tv 1.217e-08 8.210e+20 $204
+tv 1.219e-08 8.348e+20 $205
+tv 1.222e-08 8.488e+20 $206
+tv 1.225e-08 8.631e+20 $207
+tv 1.227e-08 8.776e+20 $208
+tv 1.230e-08 8.923e+20 $209
+tv 1.233e-08 9.073e+20 $210
+tv 1.236e-08 9.225e+20 $211
+tv 1.238e-08 9.380e+20 $212
+tv 1.241e-08 9.537e+20 $213
+tv 1.244e-08 9.697e+20 $214
+tv 1.246e-08 9.860e+20 $215
+tv 1.249e-08 1.003e+21 $216
+tv 1.252e-08 1.019e+21 $217
+tv 1.254e-08 1.036e+21 $218
+tv 1.257e-08 1.054e+21 $219
+tv 1.260e-08 1.072e+21 $220
+tv 1.263e-08 1.090e+21 $221
+tv 1.265e-08 1.108e+21 $222
+tv 1.268e-08 1.126e+21 $223
+tv 1.271e-08 1.145e+21 $224
+tv 1.273e-08 1.165e+21 $225
+tv 1.276e-08 1.184e+21 $226
+tv 1.279e-08 1.204e+21 $227
+tv 1.281e-08 1.224e+21 $228
+tv 1.284e-08 1.245e+21 $229
+tv 1.287e-08 1.266e+21 $230
+tv 1.290e-08 1.287e+21 $231
+tv 1.292e-08 1.308e+21 $232
+tv 1.295e-08 1.330e+21 $233
+tv 1.298e-08 1.353e+21 $234
+tv 1.300e-08 1.375e+21 $235
+tv 1.303e-08 1.399e+21 $236
+tv 1.306e-08 1.422e+21 $237
+tv 1.308e-08 1.446e+21 $238
+tv 1.311e-08 1.470e+21 $239
+tv 1.314e-08 1.495e+21 $240
+tv 1.317e-08 1.520e+21 $241
+tv 1.319e-08 1.545e+21 $242
+tv 1.322e-08 1.571e+21 $243
+tv 1.325e-08 1.598e+21 $244
+tv 1.327e-08 1.624e+21 $245
+tv 1.330e-08 1.652e+21 $246
+tv 1.333e-08 1.679e+21 $247
+tv 1.335e-08 1.708e+21 $248
+tv 1.338e-08 1.736e+21 $249
+tv 1.341e-08 1.765e+21 $250
+tv 1.344e-08 1.795e+21 $251
+tv 1.346e-08 1.825e+21 $252
+tv 1.349e-08 1.856e+21 $253
+tv 1.352e-08 1.887e+21 $254
+tv 1.354e-08 1.919e+21 $255
+tv 1.357e-08 1.951e+21 $256
+tv 1.360e-08 1.984e+21 $257
+tv 1.363e-08 2.017e+21 $258
+tv 1.365e-08 2.051e+21 $259
+tv 1.368e-08 2.085e+21 $260
+tv 1.371e-08 2.120e+21 $261
+tv 1.373e-08 2.156e+21 $262
+tv 1.376e-08 2.192e+21 $263
+tv 1.379e-08 2.229e+21 $264
+tv 1.381e-08 2.266e+21 $265
+tv 1.384e-08 2.304e+21 $266
+tv 1.387e-08 2.343e+21 $267
+tv 1.390e-08 2.382e+21 $268
+tv 1.392e-08 2.422e+21 $269
+tv 1.395e-08 2.463e+21 $270
+tv 1.398e-08 2.504e+21 $271
+tv 1.400e-08 2.546e+21 $272
+tv 1.403e-08 2.589e+21 $273
+tv 1.406e-08 2.632e+21 $274
+tv 1.408e-08 2.676e+21 $275
+tv 1.411e-08 2.721e+21 $276
+tv 1.414e-08 2.767e+21 $277
+tv 1.417e-08 2.813e+21 $278
+tv 1.419e-08 2.861e+21 $279
+tv 1.422e-08 2.909e+21 $280
+tv 1.425e-08 2.958e+21 $281
+tv 1.427e-08 3.007e+21 $282
+tv 1.430e-08 3.058e+21 $283
+tv 1.433e-08 3.109e+21 $284
+tv 1.435e-08 3.161e+21 $285
+tv 1.438e-08 3.214e+21 $286
+tv 1.441e-08 3.268e+21 $287
+tv 1.444e-08 3.323e+21 $288
+tv 1.446e-08 3.379e+21 $289
+tv 1.449e-08 3.435e+21 $290
+tv 1.452e-08 3.493e+21 $291
+tv 1.454e-08 3.552e+21 $292
+tv 1.457e-08 3.611e+21 $293
+tv 1.460e-08 3.672e+21 $294
+tv 1.752e-08 3.654e+21 $295
+tv 1.752e-08 3.654e+21 $296
+tv 1.752e-08 3.654e+21 $297
+tv 1.752e-08 4.019e+22 $298
+tv 1.757e-08 4.019e+22 $299
+tv 1.757e-08 0.000e+00 $300
+c end laser power
+c TN burn in regions 1&2
+tnburn 1 2 3
+parm tibmn 0.1    $min tion for burn
+c
+c In materials less thatn temp use this constant thermal conductivity
+c               #1 temp thermal conductivity (erg/(sec-cm-keV)
+c source: lle report by Alan She
+c data thrmcond 1  1e-3 1.58988e+10
+c data thrmcond 2  1e-3 4.64200e+11
+c
+c 70 Radiation Groups !!!haven't checked convergence!!!
+c group n1 n2 e1 e2 (log interpolation from e1 e2
+c group  0 20 0.03 1.0
+c group 20 50 1.00 5.0
+c group 50 70 5.00 300.0
+c 35 groups
+group  0 10 0.03 1.0
+group 10 25 1.00 5.0
+group 25 35 5.00 300.0
+c
+c
+c COLDOPAC 10 1 2 3 $use cold opacities below 1eV in regions 1 2 3
+c Select arrays to be put in post-processor file
+c
+pparray rho te ti tr pres R Rcm zbar u deplas xlsint vol csi bpeprd bpeprdr bpedep dene eion eelc TNDENI
+c
+c non-local doesn't seem to be working
+c parm lnlcnd 1          $non-local thermal conductivity:logical switch
+c parm RNLRNG 5.         $non-local range (def: 5.)
+parm xlibam 1.0          $reduce inv brem absorption
+parm flxlem 0.060
+parm flxlim 0.4          $ion thermal conductivity flux limiter(0.4)
+parm alvism 0.3          $+vs compression only, -ve compression + expansion (+0.2)
+parm aqvism 2.0          $+ve = Von Neumann -ve=White (+2)
+c parm qstimx 3.5e-4       $maximum temperature for quiet start
+parm qstimx 4.3e-6       $50K maximum temperature for quiet start
+parm lrdtrn 1            $logical radiation transport switch
+parm BCPDEPM 1
+c ! caution note using averaging of electron timestep
+c parm IALTDT 1          $timestep controls:0=use minimum in any given zone,>0 means find average over all zones:1=electrons,2=ions,4=radiation, use sums for multiple options
+c parm dttrmn 5e-3       $minimum temperature above which trad can dictate timestep(5e-4keV)
+c parm irdkap 0          $0=Rosseland mean opacities 1=Plank mean
+parm temin 1.551e-06     $minimum electron temperature (18K)
+parm timin 1.551e-06     $minimum ion temperature
+parm irdtrn 2            $0=non rad trans, 1= gray, 2=multi-group diffusion transport
+c parm dttrmn .03
+c parm dttrm .2
+parm nstop 1e8
+parm dt    1e-15         $The initial dt
+parm dtmin 1e-25         $Minimum dt
+parm JHTRMX 100          $ maximum number of hydro sub-cycles
+c change 13.30e-9 IALTDT 3
+c change 13.00e-9 alvism -0.2    $Use artificial viscosity in expansion too, after stagnation
+c change 13.50e-9 aqvism -2.0
+change 1.757479e-08 postdt 1.460e-11
+c change 1.37760e-9 IPSCYC 1
+c change 1.37810e-9 IPSCYC 1e5
+c change 0.50e-9 rpltdt 1e-11
+change 1.757479e-08 postdt 1.460e-11
+change 5e-11 IALTDT 0
+c parm rpltdt 0.1e-9          $initial interval between ray plots
+parm postdt 4.687e-11
+
+
+
+
+
+parm tstop 2.304877e-08
+
