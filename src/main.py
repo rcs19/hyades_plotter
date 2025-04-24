@@ -6,7 +6,8 @@ import sys
 
 def Load_Data(datafolderpath):
     """
-    Loads in .cdf data and laser data from a Hyades output folder.
+    Loads in .cdf data and laser data from a Hyades output folder. The output folder usually contains .inf and .ppf files for running the simulation but this script requires the .cdf NetCDF file. If you do not have a .cdf file, you can use the Hyades utility `PPF2NCDF` to generate one from the .ppf (see Hyades manual).
+     
     Returns:
         data - dict, contains variables and their corresponding data array
         laserTime - Laser Time data
@@ -63,6 +64,12 @@ def Plot_Radius_v_Time(data, laserTime, laserPow):
     ax.set_xlabel('Time (ns)')
     plt.show()
     
+def Plot_Density_pcolormesh(data):
+    """
+    Plots the density over time.
+    """
+
+
 if __name__=='__main__':
     datafolderpath = Path('hyades_output/109103/')
     data, laserTime, laserPow = Load_Data(datafolderpath)
