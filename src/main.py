@@ -51,7 +51,6 @@ def Plot_Radius_v_Time(data, laserTime, laserPow):
 
     # Plotting (a sample of n) zone boundaries 
     indices = np.linspace(0, len(xdata)-1, 200).astype(int)
-    print(indices)
     ax.plot(xdata[indices], ydata[indices], c="black", lw=0.2)
     ax.plot([], [], c="black", lw=0.2, label='Zone Boundary') # Dummy Plot for Legend
 
@@ -64,14 +63,53 @@ def Plot_Radius_v_Time(data, laserTime, laserPow):
     ax.set_xlabel('Time (ns)')
     plt.show()
     
-def Plot_Density_pcolormesh(data):
+def Plot_Density_pcolormesh(data, laserTime, laserPow):
     """
-    Plots the density over time.
+    Plots the density over time. 
+    Note: Radius data has shape (1058, 530) and density data has shape (1057,530) for some weird reason.
+    I had to truncate the y-axis of the grid from 1058 down to 1057 because of this. 
     """
+    # Create Grid
+    xdata = 1E9 * data['time']           # Time in nanoseconds
+    ydata = 1E4 * data['r']              # Radius in micrometers
+    X, Y = np.meshgrid(xdata, ydata[0, :])  # Meshgrid for plotting
+    Z = np.log10(data['rho'].T)          # Transpose to match meshgrid orientation
 
+    # Create figure and axis
+    fig, ax = plt.subplots(figsize=(9,5))
+
+    # Main pcolormesh plot
+    pc = ax.pcolormesh(X[:-1,], 
+                       ydata.T[:-1,], 
+                       Z,
+                       vmin=np.min(np.log10(data['rho'][:, 0])), # vmin defines the minimum data range, i.e. minimum density
+                       cmap='viridis'
+                       )
+
+    # Optional laser plot
+    try:
+        ax2 = ax.twinx()
+        ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse")
+    except:
+        print("No Laser Pulse data passed")
+
+    # Colorbar
+    cbar = fig.colorbar(pc, ax=ax)
+    cbar.set_label(r"log$_{10}$(Mass Density (g/cm$^3$))")
+
+    # Legend and labels
+    ax.legend(loc="lower left")
+    ax.set_ylim([0, 500])
+    ax.set_xlabel("Time (ns)")
+    ax.set_ylabel(r'Radius ($\mu$m)')
+    
+    # fig.savefig("./si_siImplosion.png", bbox_inches='tight', pad_inches=0.0)
+    plt.show()
 
 if __name__=='__main__':
     datafolderpath = Path('hyades_output/109103/')
     data, laserTime, laserPow = Load_Data(datafolderpath)
 
     Plot_Radius_v_Time(data, laserTime, laserPow)
+
+    Plot_Density_pcolormesh(data, laserTime, laserPow)
