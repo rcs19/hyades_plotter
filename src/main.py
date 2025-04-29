@@ -17,7 +17,7 @@ def Load_Data(datafolderpath):
     try:
         datafile = netCDF4.Dataset(datafolderpath/'hyChDD.cdf') # .cdf output file
     except:
-        print("Error: data not found.")
+        print("Error: hyChDD.cdf not found.")
         sys.exit()
 
     try:
@@ -55,8 +55,13 @@ def Plot_Radius_v_Time(data, laserTime, laserPow):
     ax.plot([], [], c="black", lw=0.2, label='Zone Boundary') # Dummy Plot for Legend
 
     # Overlay Laser Pulse Shape
-    ax2 = ax.twinx()
-    ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse")
+    try:
+        ax2 = ax.twinx()
+        ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse")
+        ax2.legend(loc='lower left')
+        ax2.set_ylabel("Laser Power (TW)")
+    except:
+        print("No laser data")
 
     ax.set_ylim([0,500])
     ax.set_ylabel('Radius ($\\mathrm{\\mu}$m)')
@@ -74,6 +79,7 @@ def Plot_Density_pcolormesh(data, laserTime, laserPow):
     ydata = 1E4 * data['r']              # Radius in micrometers
     X, Y = np.meshgrid(xdata, ydata[0, :])  # Meshgrid for plotting
     Z = np.log10(data['rho'].T)          # Transpose to match meshgrid orientation
+    minimum = np.min(np.log10(data['rho'][:, 0]))
 
     # Create figure and axis
     fig, ax = plt.subplots(figsize=(9,5))
@@ -82,7 +88,7 @@ def Plot_Density_pcolormesh(data, laserTime, laserPow):
     pc = ax.pcolormesh(X[:-1,], 
                        ydata.T[:-1,], 
                        Z,
-                       vmin=np.min(np.log10(data['rho'][:, 0])), # vmin defines the minimum data range, i.e. minimum density
+                       vmin=minimum, # vmin defines the minimum data range, i.e. minimum density
                        cmap='viridis'
                        )
 
@@ -90,6 +96,9 @@ def Plot_Density_pcolormesh(data, laserTime, laserPow):
     try:
         ax2 = ax.twinx()
         ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse")
+        ax2.legend(loc="lower left")
+        ax2.set_ylabel("Laser Power (TW)")
+
     except:
         print("No Laser Pulse data passed")
 
@@ -98,7 +107,6 @@ def Plot_Density_pcolormesh(data, laserTime, laserPow):
     cbar.set_label(r"log$_{10}$(Mass Density (g/cm$^3$))")
 
     # Legend and labels
-    ax.legend(loc="lower left")
     ax.set_ylim([0, 500])
     ax.set_xlabel("Time (ns)")
     ax.set_ylabel(r'Radius ($\mu$m)')
@@ -107,9 +115,10 @@ def Plot_Density_pcolormesh(data, laserTime, laserPow):
     plt.show()
 
 if __name__=='__main__':
+    # Load in Data
     datafolderpath = Path('hyades_output/109103/')
     data, laserTime, laserPow = Load_Data(datafolderpath)
-
+    
+    # Plots
     Plot_Radius_v_Time(data, laserTime, laserPow)
-
     Plot_Density_pcolormesh(data, laserTime, laserPow)
