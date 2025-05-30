@@ -25,7 +25,7 @@ def Load_Data(datafolderpath):
         laserTime = laserData[:,0]
         laserPow  = laserData[:,1]
     except:
-        laserTime, laserPow = False
+        laserTime = laserPow = None
 
     # Variables
         # R = zone boundary positions (cm) 
@@ -55,12 +55,12 @@ def Plot_Radius_v_Time(data, laserTime, laserPow):
     ax.plot([], [], c="black", lw=0.2, label='Zone Boundary') # Dummy Plot for Legend
 
     # Overlay Laser Pulse Shape
-    try:
+    if (laserPow is not None) and (laserTime is not None):
         ax2 = ax.twinx()
         ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse")
         ax2.legend(loc='lower left')
         ax2.set_ylabel("Laser Power (TW)")
-    except:
+    else:
         print("No laser data")
 
     ax.set_ylim([0,500])
@@ -93,13 +93,12 @@ def Plot_Density_pcolormesh(data, laserTime, laserPow):
                        )
 
     # Optional laser plot
-    try:
+    if (laserPow is not None) and (laserTime is not None):
         ax2 = ax.twinx()
         ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse")
         ax2.legend(loc="lower left")
         ax2.set_ylabel("Laser Power (TW)")
-
-    except:
+    else:
         print("No Laser Pulse data passed")
 
     # Colorbar
@@ -116,7 +115,7 @@ def Plot_Density_pcolormesh(data, laserTime, laserPow):
 
 if __name__=='__main__':
     # Load in Data
-    datafolderpath = Path('hyades_output/109103/')
+    datafolderpath = Path('shots/98246/')
     data, laserTime, laserPow = Load_Data(datafolderpath)
     
     # Plots
