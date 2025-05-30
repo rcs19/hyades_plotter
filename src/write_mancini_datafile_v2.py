@@ -12,18 +12,20 @@ How to use:
 This should output a .txt file in the correct format named `rmancini_hyades_data_{current directory name}`
 
 Alternatively you can call the function `write_mancini_file` with the path to the .cdf file as an argument. This is useful for batch converting items. This would look something like:
+```
 for shotfolder in shotdir:
     write_mancini_file(shotfolder / 'hyChDD.cdf')
-
+```
     
+
 Notes:
 ---
 1. The header title and region labels are currently hardcoded in...
 2. The header of the file should look like this:
 
 Mancini hyades:860OD, 27um CH, fill 20atm D, 0.25%Ar
-  1 D 0.25%Ar          2   78
-  2 CH                79  226
+  1 D 0.25%Ar          2   79
+  2 CH                80  227
   3 CH               227  378
 
 The last two numbers of each line represent the first and last Lagrangian zones of that region (inclusive both ends)! The first zone of the first region is always `2` to make it compatible with the post-processor.
@@ -124,9 +126,9 @@ def write_mancini_file(cdf_file):
 
     # --- Output File Creation ---
     shotnum = os.path.basename(os.getcwd())
-    now = datetime.datetime.now()
-    yymmdd = f"{now.year % 100:02d}{now.month:02d}{now.day:02d}"
-    print(yymmdd)
+    # now = datetime.datetime.now()
+    # yymmdd = f"{now.year % 100:02d}{now.month:02d}{now.day:02d}"
+    # print(yymmdd)
 
     output_filename = f'rmancini_hyades_data_{shotnum}.txt'
 
@@ -139,8 +141,8 @@ def write_mancini_file(cdf_file):
         for reg_num in range(num_regions):
             reg_cells = np.where(reg_arr[:, 1] == reg_num + 1)[0]
             if reg_cells.size > 0:
-                min_cell = 2 if reg_num == 0 else (np.min(reg_cells)+1) # ensure first zone of first region only is written as 2 (needed for post-processor)
-                max_cell = np.max(reg_cells)+1
+                min_cell = np.min(reg_cells)+2 # Note: first zone of first region must be 2 (needed for post-processor)
+                max_cell = np.max(reg_cells)+2
                 file.write(f'{reg_num + 1:3d} {reg_names[reg_num]:<15}{min_cell:5d}{max_cell:5d}\n')  
                 # Reg name is 16 characters including space behind it4
                 # reg_cells is zone number (inclusive)
@@ -171,10 +173,13 @@ def write_mancini_file(cdf_file):
                     )
                 file.write('{:15.5e} {:15.5e} {:15.5e} {:15.5e} {:15.5e} {:15.5e}\n'.format(*data_line))
 
-    print(f'(ntimes, nzones)={ne.shape}')
+    print(f'\n(ntimes, nzones)={ne.shape}')
     print(f"Wrote file '{output_filename}'")
 
 if __name__=="__main__":
+    """
+    If this script is executed in a shot foler, it will look for a .cdf file `hyChDD.cdf` and convert this for the post-processor.
+    """
     current_dir = Path.cwd()
     cdf_file = current_dir / 'hyChDD.cdf'
     write_mancini_file(cdf_file)
