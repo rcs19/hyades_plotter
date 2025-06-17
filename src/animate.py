@@ -7,9 +7,10 @@ from matplotlib.animation import PillowWriter
 from matplotlib.patches import Circle
 from matplotlib.lines import Line2D
 
-def Animate_Density(data, laserTime, laserPow, fps=20):
+def Animate_Zone(data, laserTime, laserPow, fps=20):
     r = data["r"][:, :-1] * 1e4
     Z = np.log10(data["rho"])
+    Z_label = "Density"
     vmin = np.min(Z)
     vmax = np.max(Z)
     time_array = data['time'] * 1e9
@@ -25,18 +26,19 @@ def Animate_Density(data, laserTime, laserPow, fps=20):
     fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(6, 8), height_ratios=[8, 3])
 
     # Density plot
-    mesh = ax[0].pcolormesh(X, Y, Z0, shading='auto', cmap='viridis', vmin=vmin, vmax=vmax)
+    mesh = ax[0].pcolormesh(X, Y, Z0, shading='auto', cmap='magma', vmin=vmin, vmax=vmax-0.5)
     ax[0].set_aspect('equal')
     ax[0].set_xlabel('x (um)')
     ax[0].set_ylabel('y (um)')
     ax[0].set_title('Frame: 0')
-    fig.colorbar(mesh, ax=ax[0], label='log(Density)')
+    fig.colorbar(mesh, ax=ax[0], label=Z_label)
 
     # Laser pulse plot
     ax[1].plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse")
     ax[1].set_xlabel("Time (ns)")
     ax[1].set_ylabel("Power")
     ax[1].legend()
+    ax[1].set_xlim([np.min(time_array),np.max(time_array)])
     time_marker = ax[1].axvline(0, ls='-', color='b', lw=1, zorder=10)
 
     for a in ax:
@@ -54,9 +56,9 @@ def Animate_Density(data, laserTime, laserPow, fps=20):
 
     interval = 1000/fps # interval between each frame in miliseconds
     ani = animation.FuncAnimation(fig, update, frames=len(time_array), interval=interval, blit=False)
-    ani.save("density_log_animation.gif", writer=PillowWriter(fps=fps))
+    # ani.save("density_animation.gif", writer=PillowWriter(fps=fps))
 
-    # plt.show()
+    plt.show()
 
 def Animate_Radius(data, laserTime=None, laserPow=None, fps=20):
     """
@@ -130,5 +132,5 @@ if __name__=='__main__':
     datafolderpath = Path('shots/98246/')
     data, laserTime, laserPow = Load_Data(datafolderpath)
 
-    Animate_Density(data, laserTime, laserPow)
-    Animate_Radius(data, laserTime, laserPow)
+    Animate_Zone(data, laserTime, laserPow)
+    # Animate_Radius(data, laserTime, laserPow)
