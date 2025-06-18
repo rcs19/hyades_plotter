@@ -39,7 +39,7 @@ def Load_Data(datafolderpath):
     data = dict((label, datafile.variables[var][:]) for label, var in zip(variable_labels, variables_list))
     return data, laserTime, laserPow
 
-def Plot_Radius_v_Time(data, laserTime, laserPow):
+def LinePlot_Radius_v_Time(data, laserTime, laserPow):
     """
     Plot Zone Boundary Radius vs Time.
     """
@@ -68,10 +68,39 @@ def Plot_Radius_v_Time(data, laserTime, laserPow):
     ax.set_xlabel('Time (ns)')
     plt.show()
     
-def Plot_Density_pcolormesh(data, laserTime, laserPow):
+def LinePlot_v_Time(data, laserTime, laserPow, variable="r"):
+    """
+    Same as above but plots specified variable
+    """
+    # Plotting R vs Time
+    xdata = 1E9*data['time'] # times (now nanoseconds),
+    ydata = data[variable] 
+
+    fig, ax = plt.subplots(figsize=(8,5)) 
+
+    # Plotting (a sample of n) zone boundaries 
+    indices = np.linspace(0, len(xdata)-1, 200).astype(int)
+    ax.plot(xdata[indices], ydata[indices], c="black", lw=0.2)
+    ax.plot([], [], c="black", lw=0.2, label=variable) # Dummy Plot for Legend
+
+    # Overlay Laser Pulse Shape
+    if (laserPow is not None) and (laserTime is not None):
+        ax2 = ax.twinx()
+        ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse")
+        ax2.legend(loc='lower left')
+        ax2.set_ylabel("Laser Power (TW)")
+    else:
+        print("No laser data")
+
+    # ax.set_ylim([0,500])
+    ax.set_ylabel(variable)
+    ax.set_xlabel('Time (ns)')
+    plt.show()
+
+def Colormap_Density(data, laserTime, laserPow):
     """
     Plots the density over time. 
-    Note: Radius data has shape (1058, 530) and density data has shape (1057,530) for some weird reason.
+    Note: Radius data has shape (1058, 530) and density data has shape (1057,530).
     I had to truncate the y-axis of the grid from 1058 down to 1057 because of this. 
     """
     # Create Grid
@@ -102,8 +131,9 @@ def Plot_Density_pcolormesh(data, laserTime, laserPow):
         print("No Laser Pulse data passed")
 
     # Colorbar
-    cbar = fig.colorbar(pc, ax=ax)
-    cbar.set_label(r"log$_{10}$(Mass Density (g/cm$^3$))")
+    plt.subplots_adjust(right=0.8) # Make space for colorbar
+    cax = fig.add_axes([ax.get_position().x1+0.08,ax.get_position().y0,0.04,ax.get_position().height])
+    plt.colorbar(pc, cax=cax, label=r"log$_{10}$(Mass Density (g/cm$^3$))") # Similar to fig.colorbar(im, cax = cax)
 
     # Legend and labels
     ax.set_ylim([0, 500])
@@ -113,11 +143,65 @@ def Plot_Density_pcolormesh(data, laserTime, laserPow):
     # fig.savefig("./si_siImplosion.png", bbox_inches='tight', pad_inches=0.0)
     plt.show()
 
+def Colormap(data, laserTime, laserPow, variable="rho"):
+    """
+    Same as above but for a specified variable.
+    Note: Radius data has shape (1058, 530) and density data has shape (1057,530).
+    I had to truncate the y-axis of the grid from 1058 down to 1057 because of this. 
+    """
+    # Create Grid
+    xdata = 1E9 * data['time']           # Time in nanoseconds
+    ydata = 1E4 * data['r']              # Radius in micrometers
+    X, Y = np.meshgrid(xdata, ydata[0, :])  # Meshgrid for plotting
+    Z = data[variable].T          # Transpose to match meshgrid orientation
+    minimum = np.min(data[variable][:, 0])
+
+    # Create figure and axis
+    fig, ax = plt.subplots(figsize=(9,5))
+
+    # Main pcolormesh plot
+    pc = ax.pcolormesh(X[:-1,], 
+                       ydata.T[:-1,], 
+                       Z,
+                       vmin=minimum, # vmin defines the minimum data range, i.e. minimum density
+                       cmap='viridis'
+                       )
+
+    # Optional laser plot
+    if (laserPow is not None) and (laserTime is not None):
+        ax2 = ax.twinx()
+        ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse")
+        ax2.legend(loc="lower left")
+        ax2.set_ylabel("Laser Power (TW)")
+    else:
+        print("No Laser Pulse data passed")
+
+    # Colorbar
+    plt.subplots_adjust(right=0.8) # Make space for colorbar
+    cax = fig.add_axes([ax.get_position().x1+0.08,ax.get_position().y0,0.04,ax.get_position().height])
+    plt.colorbar(pc, cax=cax, label=variable) # Similar to fig.colorbar(im, cax = cax)
+
+    # Legend and labels
+    ax.set_ylim([0, 500])
+    ax.set_xlabel("Time (ns)")
+    ax.set_ylabel(r'Radius ($\mu$m)')
+    
+    # fig.savefig("./si_siImplosion.png", bbox_inches='tight', pad_inches=0.0)
+
+    plt.show()
+
 if __name__=='__main__':
-    # Load in Data
+    ## Load in Data
     datafolderpath = Path('shots/98246/')
     data, laserTime, laserPow = Load_Data(datafolderpath)
     
-    # Plots
-    Plot_Radius_v_Time(data, laserTime, laserPow)
-    Plot_Density_pcolormesh(data, laserTime, laserPow)
+    ## For reference: 
+    ## variable_labels = ['r','rcm','rho','ti','te','p','tn','fE','tr','dene','time']
+
+    ## Line Plots
+    # LinePlot_Radius_v_Time(data, laserTime, laserPow)
+    # LinePlot_v_Time(data, laserTime, laserPow, variable='dene')
+
+    ## Color Plots (x,y,z = time,radius,`variable`)
+    # Colormap_Density(data, laserTime, laserPow)
+    Colormap(data, laserTime, laserPow, variable="dene")
