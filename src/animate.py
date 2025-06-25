@@ -10,12 +10,12 @@ from matplotlib.lines import Line2D
 def Animate_Zone(data, laserTime, laserPow, fps=20):
     r = data["r"][:, :-1] * 1e4
     Z = np.log10(data["rho"])
-    Z_label = "Density"
+    Z_label = r"log$_{10}$(Mass Density (g/cm$^3$))"
     vmin = np.min(Z)
     vmax = np.max(Z)
     time_array = data['time'] * 1e9
 
-    # Setting up grid and first frame
+    # Setting up grid for the first frame (as before)
     theta = np.linspace(0, 2 * np.pi, 180)
     R_grid, Theta = np.meshgrid(r[0], theta)
     X = R_grid * np.cos(Theta)
@@ -31,6 +31,11 @@ def Animate_Zone(data, laserTime, laserPow, fps=20):
     ax[0].set_xlabel('x (um)')
     ax[0].set_ylabel('y (um)')
     ax[0].set_title('Frame: 0')
+
+    # --- FIX 2: Set fixed axis limits before starting the animation ---
+    ax[0].set_xlim(-500, 500)
+    ax[0].set_ylim(-500, 500)
+
     fig.colorbar(mesh, ax=ax[0], label=Z_label)
 
     # Laser pulse plot
@@ -38,27 +43,33 @@ def Animate_Zone(data, laserTime, laserPow, fps=20):
     ax[1].set_xlabel("Time (ns)")
     ax[1].set_ylabel("Power")
     ax[1].legend()
-    ax[1].set_xlim([np.min(time_array),np.max(time_array)])
+    ax[1].set_xlim([np.min(time_array), np.max(time_array)])
     time_marker = ax[1].axvline(0, ls='-', color='b', lw=1, zorder=10)
 
     for a in ax:
         a.set_anchor('W')
 
     def update(i):
-        # Update density plot
+        nonlocal mesh
+        mesh.remove()
+        # Update grid and data
+        R_grid, Theta = np.meshgrid(r[i], theta)
+        X = R_grid * np.cos(Theta)
+        Y = R_grid * np.sin(Theta)
         Zi = np.tile(Z[i], (len(theta), 1))
-        mesh.set_array(Zi.ravel())
-        ax[0].set_title(f"Frame: {i}  |  Time: {time_array[i]:.3g} ns")
 
-        # Update time marker on laser plot
-        time_marker.set_xdata([time_array[i],time_array[i]])
+        # Create new pcolormesh. It will adhere to the pre-set axes.
+        mesh = ax[0].pcolormesh(X, Y, Zi, shading='auto', cmap='magma', vmin=vmin, vmax=vmax-0.5)
+
+        # Update title and time marker
+        ax[0].set_title(f"Frame: {i}  |  Time: {time_array[i]:.3g} ns")
+        time_marker.set_xdata([time_array[i], time_array[i]])
+
         return mesh, time_marker
 
-    interval = 1000/fps # interval between each frame in miliseconds
+    interval = 1000 / fps # interval between each frame in milliseconds
     ani = animation.FuncAnimation(fig, update, frames=len(time_array), interval=interval, blit=False)
-    # ani.save("density_animation.gif", writer=PillowWriter(fps=fps))
-
-    plt.show()
+    ani.save("density_animation.gif", writer=PillowWriter(fps=fps))
 
 def Animate_Radius(data, laserTime=None, laserPow=None, fps=20):
     """

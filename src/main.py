@@ -57,8 +57,8 @@ def LinePlot_Radius_v_Time(data, laserTime, laserPow):
     # Overlay Laser Pulse Shape
     if (laserPow is not None) and (laserTime is not None):
         ax2 = ax.twinx()
-        ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse")
-        ax2.legend(loc='lower left')
+        ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse", alpha=0.5)
+        ax2.legend(loc='upper right')
         ax2.set_ylabel("Laser Power (TW)")
     else:
         print("No laser data")
@@ -66,6 +66,7 @@ def LinePlot_Radius_v_Time(data, laserTime, laserPow):
     ax.set_ylim([0,500])
     ax.set_ylabel('Radius ($\\mathrm{\\mu}$m)')
     ax.set_xlabel('Time (ns)')
+    ax.set_title('Shot 98263 - Time Evolution of Lagrangian Zone Boundaries')
     plt.show()
     
 def LinePlot_v_Time(data, laserTime, laserPow, variable="r"):
@@ -125,7 +126,7 @@ def Colormap_Density(data, laserTime, laserPow):
     if (laserPow is not None) and (laserTime is not None):
         ax2 = ax.twinx()
         ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse")
-        ax2.legend(loc="lower left")
+        ax2.legend(loc="upper right")
         ax2.set_ylabel("Laser Power (TW)")
     else:
         print("No Laser Pulse data passed")
@@ -192,16 +193,16 @@ def Colormap(data, laserTime, laserPow, variable="rho"):
 
 if __name__=='__main__':
     ## Load in Data
-    datafolderpath = Path('shots/98246/')
+    datafolderpath = Path('shots/98263/')
     data, laserTime, laserPow = Load_Data(datafolderpath)
     
     ## For reference: 
     ## variable_labels = ['r','rcm','rho','ti','te','p','tn','fE','tr','dene','time']
 
     ## Line Plots
-    # LinePlot_Radius_v_Time(data, laserTime, laserPow)
+    LinePlot_Radius_v_Time(data, laserTime, laserPow)
     # LinePlot_v_Time(data, laserTime, laserPow, variable='dene')
 
     ## Color Plots (x,y,z = time,radius,`variable`)
     # Colormap_Density(data, laserTime, laserPow)
-    Colormap(data, laserTime, laserPow, variable="dene")
+    # Colormap(data, laserTime, laserPow, variable="dene")
