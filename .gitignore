@@ -176,3 +176,4 @@ cython_debug/
 hyades_output/
 shots/
 gifs/
+plots/
