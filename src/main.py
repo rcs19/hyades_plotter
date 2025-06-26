@@ -49,26 +49,34 @@ def LinePlot_Radius_v_Time(data, laserTime, laserPow):
 
     fig, ax = plt.subplots(figsize=(8,5)) 
 
-    # Plotting (a sample of n) zone boundaries 
-    indices = np.linspace(0, len(xdata)-1, 200).astype(int)
-    ax.plot(xdata[indices], ydata[indices], c="black", lw=0.2)
-    ax.plot([], [], c="black", lw=0.2, label='Zone Boundary') # Dummy Plot for Legend
+    gas_boundary = 79
+    ch_boundary = 380
 
+    ax.plot(xdata, ydata[:,0:gas_boundary], c="#004B53", lw=0.2)            # Deuterium
+    ax.plot(xdata, ydata[:,gas_boundary:ch_boundary], c="#3B3B3B", lw=0.2)  # Plastic
+
+    line1 = ax.plot([], [], c="#3B3B3B", label='CH Plastic', lw=3) # Dummy Plot for Legend
+    line2 = ax.plot([], [], c="#004B53", label='Deuterium', lw=3) # Dummy Plot for Legend
+    
+    lines = line1 + line2
     # Overlay Laser Pulse Shape
     if (laserPow is not None) and (laserTime is not None):
         ax2 = ax.twinx()
-        ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse", alpha=0.5)
-        ax2.legend(loc='upper right')
+        lns3 = ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse", alpha = 0.7)
+        lines = lines + lns3
         ax2.set_ylabel("Laser Power (TW)")
     else:
         print("No laser data")
 
+    labels = [l.get_label() for l in lines]
+    ax.legend(lines, labels, loc=0)
     ax.set_ylim([0,500])
     ax.set_ylabel('Radius ($\\mathrm{\\mu}$m)')
     ax.set_xlabel('Time (ns)')
-    ax.set_title('Shot 98263 - Time Evolution of Lagrangian Zone Boundaries')
+    ax.set_title('Time Plot of Lagrangian Zone Boundaries')
     plt.show()
-    
+    fig.savefig('r_vs_t_plot.pdf', format='pdf')
+
 def LinePlot_v_Time(data, laserTime, laserPow, variable="r"):
     """
     Same as above but plots specified variable
@@ -126,7 +134,7 @@ def Colormap_Density(data, laserTime, laserPow):
     if (laserPow is not None) and (laserTime is not None):
         ax2 = ax.twinx()
         ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse")
-        ax2.legend(loc="upper right")
+        ax2.legend(loc="lower left")
         ax2.set_ylabel("Laser Power (TW)")
     else:
         print("No Laser Pulse data passed")
