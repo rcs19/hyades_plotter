@@ -22,8 +22,8 @@ def Load_Data(datafolderpath):
 
     try:
         laserData = np.loadtxt(datafolderpath/'laser_pulse_shape_final.txt', delimiter=',') # laser pulse shape
-        laserTime = laserData[:,0]
-        laserPow  = laserData[:,1]
+        laserTime = laserData[:,0]        # ns
+        laserPow  = laserData[:,1]        # W cm-2
     except:
         laserTime = laserPow = None
 
@@ -64,7 +64,7 @@ def LinePlot_Radius_v_Time(data, laserTime, laserPow):
         ax2 = ax.twinx()
         lns3 = ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse", alpha = 0.7)
         lines = lines + lns3
-        ax2.set_ylabel("Laser Power (TW)")
+        ax2.set_ylabel("Laser Intensity ($10^{12}$ W cm$^{-2}$)")
     else:
         print("No laser data")
 
@@ -204,8 +204,7 @@ if __name__=='__main__':
     datafolderpath = Path('shots/98263/')
     data, laserTime, laserPow = Load_Data(datafolderpath)
     
-    ## For reference: 
-    ## variable_labels = ['r','rcm','rho','ti','te','p','tn','fE','tr','dene','time']
+    ## For reference: variable_labels = ['r','rcm','rho','ti','te','p','tn','fE','tr','dene','time']
 
     ## Line Plots
     LinePlot_Radius_v_Time(data, laserTime, laserPow)

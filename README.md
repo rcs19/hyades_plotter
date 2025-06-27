@@ -16,3 +16,9 @@ To run the IDL script:
 ```
 IDL> .run ./src/main_idl.pro
 ```
+
+### Notes:
+
+- In the Hyades input deck `hyChDD.inf` the laser intensity is in ergs cm$^{-2}$ s$^{-1}$. This corresponds to $10^{-7}$ W cm$^{-2}$ (1 erg = $10^{-7}$ J). In `laser_pulse_shape_final.txt` the units of time are ns and laser intensity is $10^{12}$ cm$^{-2}$.
+
+
