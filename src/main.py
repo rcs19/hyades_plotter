@@ -109,8 +109,6 @@ def LinePlot_v_Time(data, laserTime, laserPow, variable="r"):
 def Colormap_Density(data, laserTime, laserPow):
     """
     Plots the density over time. 
-    Note: Radius data has shape (1058, 530) and density data has shape (1057,530).
-    I had to truncate the y-axis of the grid from 1058 down to 1057 because of this. 
     """
     # Create Grid
     xdata = 1E9 * data['time']           # Time in nanoseconds
@@ -152,19 +150,22 @@ def Colormap_Density(data, laserTime, laserPow):
     # fig.savefig("./si_siImplosion.png", bbox_inches='tight', pad_inches=0.0)
     plt.show()
 
-def Colormap(data, laserTime, laserPow, variable="rho"):
+def Colormap(data, laserTime, laserPow, variable="rho", log=False):
     """
     Same as above but for a specified variable.
-    Note: Radius data has shape (1058, 530) and density data has shape (1057,530).
-    I had to truncate the y-axis of the grid from 1058 down to 1057 because of this. 
     """
     # Create Grid
     xdata = 1E9 * data['time']           # Time in nanoseconds
     ydata = 1E4 * data['r']              # Radius in micrometers
     X, Y = np.meshgrid(xdata, ydata[0, :])  # Meshgrid for plotting
-    Z = data[variable].T          # Transpose to match meshgrid orientation
-    minimum = np.min(data[variable][:, 0])
 
+    if log:
+        Z = np.log10(data[variable]).T          # Transpose to match meshgrid orientation
+    else:
+        Z = data[variable].T
+
+    minimum = np.min(Z[0,:])
+    print(np.max(Z))
     # Create figure and axis
     fig, ax = plt.subplots(figsize=(9,5))
 
@@ -188,7 +189,7 @@ def Colormap(data, laserTime, laserPow, variable="rho"):
     # Colorbar
     plt.subplots_adjust(right=0.8) # Make space for colorbar
     cax = fig.add_axes([ax.get_position().x1+0.08,ax.get_position().y0,0.04,ax.get_position().height])
-    plt.colorbar(pc, cax=cax, label=variable) # Similar to fig.colorbar(im, cax = cax)
+    plt.colorbar(pc, cax=cax, label=("log$_{10}$ " if log else " ") + variable) # Similar to fig.colorbar(im, cax = cax)
 
     # Legend and labels
     ax.set_ylim([0, 500])
@@ -199,17 +200,34 @@ def Colormap(data, laserTime, laserPow, variable="rho"):
 
     plt.show()
 
+    ### End of plotting code
+
+    ### Print Z value at given coordinates (time,radius) 
+    userinput = input("Enter `x,y` = ").split(",")
+    x, y = float(userinput[0]), float(userinput[1])
+
+    i = (np.abs(xdata - x)).argmin()
+    j = (np.abs(ydata[0, :] - y)).argmin()
+
+    try:
+        value = Z[i, j]
+        print(f"Z({x:.2f} ns, {y:.2f} µm) = {value:.3g}")
+    except IndexError:
+        print(f"Coordinate out of range: ({x}, {y})")
+
 if __name__=='__main__':
+    """
+    For reference: variable_labels = ['r','rcm','rho','ti','te','p','tn','fE','tr','dene','time']
+    See Hyades User Manual p. 45 for variables and units
+    """
     ## Load in Data
     datafolderpath = Path('shots/98263/')
     data, laserTime, laserPow = Load_Data(datafolderpath)
     
-    ## For reference: variable_labels = ['r','rcm','rho','ti','te','p','tn','fE','tr','dene','time']
-
     ## Line Plots
-    LinePlot_Radius_v_Time(data, laserTime, laserPow)
+    # LinePlot_Radius_v_Time(data, laserTime, laserPow)
     # LinePlot_v_Time(data, laserTime, laserPow, variable='dene')
 
     ## Color Plots (x,y,z = time,radius,`variable`)
     # Colormap_Density(data, laserTime, laserPow)
-    # Colormap(data, laserTime, laserPow, variable="dene")
+    Colormap(data, laserTime, laserPow, variable="dene", log=True)
