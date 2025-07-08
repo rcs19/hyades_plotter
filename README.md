@@ -6,16 +6,10 @@ This repository has code for plotting NetCDF output files from Hyades. The plots
 
 This script contains plotting functions for Hyades outputs and requires a .cdf NetCDF output file. If you do not have a .cdf file, you can use the Hyades utility `PPF2NCDF` to generate one from the .ppf (see Hyades manual).
 
-## IDL Script - `main_idl.pro`
-
-Starting IDL from command line on YPI servers (I am using Sausage):
-```
-$ /opt/york/phys/pkg/Modules/idl/idl71/bin/idl
-```
-To run the IDL script:
-```
-IDL> .run ./src/main_idl.pro
-```
+This script can:
+1. Plot the time evolution of a specified variable for each Lagrangian zone.
+2. Plot the time evolution of a specified variable in a colourmap, with radius on the y-axis and time on the x-axis and the variable on the z-(colour)-axis.
+3. Plot a radial profile of a specified variable at a specified time.
 
 ### Notes:
 

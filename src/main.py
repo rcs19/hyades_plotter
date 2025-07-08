@@ -74,8 +74,7 @@ def LinePlot_Radius_v_Time(data, laserTime, laserPow):
     ax.set_ylabel('Radius ($\\mathrm{\\mu}$m)')
     ax.set_xlabel('Time (ns)')
     ax.set_title('Time Plot of Lagrangian Zone Boundaries')
-    plt.show()
-    fig.savefig('r_vs_t_plot.pdf', format='pdf')
+    # fig.savefig('r_vs_t_plot.pdf', format='pdf') # Optional save figure as pdf vector graphic for Latex figures
 
 def LinePlot_v_Time(data, laserTime, laserPow, variable="r"):
     """
@@ -104,7 +103,6 @@ def LinePlot_v_Time(data, laserTime, laserPow, variable="r"):
     # ax.set_ylim([0,500])
     ax.set_ylabel(variable)
     ax.set_xlabel('Time (ns)')
-    plt.show()
 
 def Colormap_Density(data, laserTime, laserPow):
     """
@@ -148,7 +146,6 @@ def Colormap_Density(data, laserTime, laserPow):
     ax.set_ylabel(r'Radius ($\mu$m)')
     
     # fig.savefig("./si_siImplosion.png", bbox_inches='tight', pad_inches=0.0)
-    plt.show()
 
 def Colormap(data, laserTime, laserPow, variable="rho", log=False):
     """
@@ -195,10 +192,6 @@ def Colormap(data, laserTime, laserPow, variable="rho", log=False):
     ax.set_ylim([0, 500])
     ax.set_xlabel("Time (ns)")
     ax.set_ylabel(r'Radius ($\mu$m)')
-    
-    # fig.savefig("./si_siImplosion.png", bbox_inches='tight', pad_inches=0.0)
-
-    plt.show()
 
     ### End of plotting code
 
@@ -208,26 +201,63 @@ def Colormap(data, laserTime, laserPow, variable="rho", log=False):
 
     i = (np.abs(xdata - x)).argmin()
     j = (np.abs(ydata[0, :] - y)).argmin()
-
+    print(i,y)
     try:
         value = Z[i, j]
         print(f"Z({x:.2f} ns, {y:.2f} µm) = {value:.3g}")
     except IndexError:
         print(f"Coordinate out of range: ({x}, {y})")
 
+def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Radial Profile", xlabel="x (um)", ylabel="$T_e$ (keV)", xlim=(0,100)):
+    """
+    Plots radial profile of specified variable. By default, plots electron temperature "te".
+    
+    Arguments
+    ---
+    data: dict, pandas.dataframe
+        - Data loaded in from Load_Data() function 
+    time: float
+        - Time (ns) to plot
+    variable: str
+        - Variable to plot on y-axis. Default = "te"
+    title:
+        - Plot title, default = "Electron Temperature Radial Profile"
+    xlabel:
+        - Plot x-axis label, default = "x (um)"
+    ylabel:
+        - y-axis label of plot, default = "$T_e$ (keV)"
+    xlim:
+        - x-axis limits (um), default = (0,100)
+    """
+    time_index = (np.abs(data['time'] - float(time)*1e-9)).argmin()
+    xdata = 1e4 * data['r'][time_index,:-1]
+    ydata = data[variable][time_index,]
+    print(data['time'][time_index,])
+
+    fig, ax = plt.subplots()
+    ax.plot(xdata, ydata)
+    ax.set_xlim(xlim)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
+
 if __name__=='__main__':
+
     """
     For reference: variable_labels = ['r','rcm','rho','ti','te','p','tn','fE','tr','dene','time']
     See Hyades User Manual p. 45 for variables and units
     """
-    ## Load in Data
+    ## === Load in Data ===
     datafolderpath = Path('shots/98263/')
     data, laserTime, laserPow = Load_Data(datafolderpath)
     
-    ## Line Plots
-    # LinePlot_Radius_v_Time(data, laserTime, laserPow)
-    # LinePlot_v_Time(data, laserTime, laserPow, variable='dene')
+    ## === Line Plots ===
+    LinePlot_Radius_v_Time(data, laserTime, laserPow)
+    LinePlot_v_Time(data, laserTime, laserPow, variable='te')
+    RadialProfile(data, time=3.0,)
 
-    ## Color Plots (x,y,z = time,radius,`variable`)
-    # Colormap_Density(data, laserTime, laserPow)
-    Colormap(data, laserTime, laserPow, variable="dene", log=True)
+    ## === Color Plots (x,y,z = time,radius,`variable`) === 
+    Colormap_Density(data, laserTime, laserPow)
+    Colormap(data, laserTime, laserPow, variable="te")
+
+    plt.show()
