@@ -232,6 +232,8 @@ def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Rad
     time_index = (np.abs(data['time'] - float(time)*1e-9)).argmin()
     xdata = 1e4 * data['r'][time_index,:-1]
     ydata = data[variable][time_index,]
+    if variable == "dene":
+        ydata = ydata * 1e-24
     # print(data['time'][time_index,])
 
     # Mirror x along the y-axis
@@ -248,6 +250,15 @@ def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Rad
     ax.set_ylabel(ylabel)
     ax.set_title(title)
     return line
+
+def PrintTimes(data):
+    """
+    Prints available dump times in the data.
+    """
+    times = data['time'] * 1E9 # Convert to ns
+    print("Timedumps (from i=1)\nindex,ns:")
+    for i, t in enumerate(times):
+        print(f"{i+1},{t:.3f}")
 
 if __name__=='__main__':
 
@@ -270,15 +281,14 @@ if __name__=='__main__':
 
     # plt.show()
 
-
-
     fig, ax = plt.subplots(figsize=(6,3))
     ax2 = ax.twinx()
-    Te_line = RadialProfile(data, time=3.0, ax=ax, color="#3072b1", title=None, xlim=(-120,120))
-    ne_line = RadialProfile(data, time=3.0, variable="dene", ylabel="$n_e$ (cm$^{-3}$)", color="#A72626", label="$n_e$", linestyle="--", title="Electron Temperature and Density Radial Profile", xlim=(-120,120), ax=ax2)
+    Te_line = RadialProfile(data, time=2.95, ax=ax, color="#3072b1", title=None, xlim=(-120,120))
+    ne_line = RadialProfile(data, time=2.95, variable="dene", ylabel="$n_e$ ($\\times 10^{24}$ cm$^{-3}$)", color="#A72626", label="$n_e$", linestyle="--", title="Electron Temperature and Density Radial Profile", xlim=(-120,120), ax=ax2)
     lines = Te_line + ne_line
     labels = [l.get_label() for l in lines]
     plt.legend(lines, labels, loc=0)
     plt.show()
-    fig.savefig('hyades_radial_profile.svg', format="svg", bbox_inches="tight")
+    # fig.savefig('hyades_radial_profile.svg', format="svg", bbox_inches="tight")
 
+    # PrintTimes(data)
