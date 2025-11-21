@@ -233,6 +233,8 @@ def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Rad
     time_index = (np.abs(data['time'] - float(time)*1e-9)).argmin()
     xdata = 1e4 * data['r'][time_index,:-1]
     ydata = data[variable][time_index,]
+    if variable == "dene":
+        ydata = ydata * 1e-24
     # print(data['time'][time_index,])
 
     # Mirror x along the y-axis
@@ -249,6 +251,15 @@ def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Rad
     ax.set_ylabel(ylabel)
     ax.set_title(title)
     return line
+
+def PrintTimes(data):
+    """
+    Prints available dump times in the data.
+    """
+    times = data['time'] * 1E9 # Convert to ns
+    print("Timedumps (from i=1)\nindex,ns:")
+    for i, t in enumerate(times):
+        print(f"{i+1},{t:.3f}")
 
 if __name__=='__main__':
 
@@ -286,7 +297,7 @@ if __name__=='__main__':
     labels = [l.get_label() for l in lines]
     plt.legend(lines, labels, loc=0)
     plt.show()
-    # fig.savefig('hyades_radial_profile.svg', format="svg", bbox_inches="tight")
+    # # fig.savefig('hyades_radial_profile.svg', format="svg", bbox_inches="tight")
 
     # R vs t
     # LinePlot_Radius_v_Time(data, laserTime, laserPow)
