@@ -244,12 +244,12 @@ def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Rad
     if ax is None:
         fig, ax = plt.subplots()
         ext_axis = False
-    line = ax.plot(xdata, ydata, label=label, ls=linestyle, color=color)
+    lineplot = ax.plot(xdata, ydata, label=label, ls=linestyle, color=color)
     ax.set_xlim(xlim)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_title(title)
-    return line
+    return lineplot
 
 def PrintTimes(data):
     """
@@ -267,28 +267,30 @@ if __name__=='__main__':
     See Hyades User Manual p. 45 for variables and units
     """
     ## === Load in Data ===
-    datafolderpath = Path('shots/98252/')
+    datafolderpath = Path('shots/98263/')
     data, laserTime, laserPow = Load_Data(datafolderpath)
-    
-    ## === Line Plots ===
-    # LinePlot_Radius_v_Time(data, laserTime, laserPow)
-    # LinePlot_v_Time(data, laserTime, laserPow, variable='te')
-    # RadialProfile(data, time=3.0, variable="dene", ylabel="$n_e$ (cm$^{-3}$)", title="Electron Density Radial Profile")
+    PrintTimes(data)
+
+    # === Line Plots ===
+    LinePlot_Radius_v_Time(data, laserTime, laserPow)
+    # LinePlot_v_Time(data, laserTime, laserPow, variable='ti')
+    # RadialProfile(data, time=2.65, variable="ti", title="Ion Temp")
+    # RadialProfile(data, time=2.65, variable="te", )
 
     ## === Color Plots (x,y,z = time,radius,`variable`) === 
     # Colormap_Density(data, laserTime, laserPow)
-    # Colormap(data, laserTime, laserPow, variable="dene")
+    # Colormap(data, laserTime, laserPow, variable="te", log=True)
+    # Colormap(data, laserTime, laserPow, variable="dene", log=True)
 
-    # plt.show()
-
-    fig, ax = plt.subplots(figsize=(6,3))
-    ax2 = ax.twinx()
-    Te_line = RadialProfile(data, time=2.95, ax=ax, color="#3072b1", title=None, xlim=(-120,120))
-    ne_line = RadialProfile(data, time=2.95, variable="dene", ylabel="$n_e$ ($\\times 10^{24}$ cm$^{-3}$)", color="#A72626", label="$n_e$", linestyle="--", title="Electron Temperature and Density Radial Profile", xlim=(-120,120), ax=ax2)
-    lines = Te_line + ne_line
-    labels = [l.get_label() for l in lines]
-    plt.legend(lines, labels, loc=0)
-    plt.show()
+    # # === Radial Profile at given time ===
+    # time = 2.95
+    # fig, ax = plt.subplots(figsize=(6,3))
+    # ax2 = ax.twinx()
+    # Te_line = RadialProfile(data, time=time, ax=ax, color="#3072b1", title=None, xlim=(-120,120))
+    # ne_line = RadialProfile(data, time=time, variable="dene", ylabel="$n_e$ ($\\times 10^{24}$ cm$^{-3}$)", color="#A72626", label="$n_e$", linestyle="--", title="Electron Temperature and Density Radial Profile", xlim=(-120,120), ax=ax2)
+    # lines = Te_line + ne_line
+    # labels = [l.get_label() for l in lines]
+    # plt.legend(lines, labels, loc=0)
     # fig.savefig('hyades_radial_profile.svg', format="svg", bbox_inches="tight")
-
-    # PrintTimes(data)
+    
+    plt.show()
