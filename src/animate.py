@@ -7,10 +7,10 @@ from matplotlib.animation import PillowWriter
 from matplotlib.patches import Circle
 from matplotlib.lines import Line2D
 
-def Animate_Zone(data, laserTime, laserPow, fps=20):
+def Animate_Zone(data, laserTime, laserPow, variable="rho", label=r"log$_{10}$(Mass Density (g/cm$^3$))", fps=20):
     r = data["r"][:, :-1] * 1e4
-    Z = np.log10(data["rho"])
-    Z_label = r"log$_{10}$(Mass Density (g/cm$^3$))"
+    Z = np.log10(data[variable]*0.1)
+    Z_label = label
     vmin = np.min(Z)
     vmax = np.max(Z)
     time_array = data['time'] * 1e9
@@ -26,7 +26,7 @@ def Animate_Zone(data, laserTime, laserPow, fps=20):
     fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(6, 8), height_ratios=[8, 3])
 
     # Density plot
-    mesh = ax[0].pcolormesh(X, Y, Z0, shading='auto', cmap='magma', vmin=vmin, vmax=vmax-0.5)
+    mesh = ax[0].pcolormesh(X, Y, Z0, shading='auto', cmap='magma', vmin=vmin, vmax=vmax)
     ax[0].set_aspect('equal')
     ax[0].set_xlabel('x (um)')
     ax[0].set_ylabel('y (um)')
@@ -59,7 +59,7 @@ def Animate_Zone(data, laserTime, laserPow, fps=20):
         Zi = np.tile(Z[i], (len(theta), 1))
 
         # Create new pcolormesh. It will adhere to the pre-set axes.
-        mesh = ax[0].pcolormesh(X, Y, Zi, shading='auto', cmap='magma', vmin=vmin, vmax=vmax-0.5)
+        mesh = ax[0].pcolormesh(X, Y, Zi, shading='auto', cmap='magma', vmin=vmin, vmax=vmax)
 
         # Update title and time marker
         ax[0].set_title(f"Frame: {i}  |  Time: {time_array[i]:.3g} ns")
@@ -69,7 +69,7 @@ def Animate_Zone(data, laserTime, laserPow, fps=20):
 
     interval = 1000 / fps # interval between each frame in milliseconds
     ani = animation.FuncAnimation(fig, update, frames=len(time_array), interval=interval, blit=False)
-    ani.save("density_animation.gif", writer=PillowWriter(fps=fps))
+    ani.save(f"{variable}_animation.gif", writer=PillowWriter(fps=fps))
 
 def Animate_Radius(data, laserTime=None, laserPow=None, fps=20):
     """
@@ -140,8 +140,8 @@ def Animate_Radius(data, laserTime=None, laserPow=None, fps=20):
 
 if __name__=='__main__':
     # Load in Data
-    datafolderpath = Path('shots/98246/')
+    datafolderpath = Path('shots/98263/')
     data, laserTime, laserPow = Load_Data(datafolderpath)
 
-    Animate_Zone(data, laserTime, laserPow)
+    Animate_Zone(data, laserTime, laserPow, variable="dene", label=r"log$_{10}$(Electron Density (cm$^{-3}$))")
     # Animate_Radius(data, laserTime, laserPow)
