@@ -47,7 +47,7 @@ def LinePlot_Radius_v_Time(data, laserTime, laserPow):
     xdata = 1E9*data['time'] # times (now nanoseconds),
     ydata = 1E4*data['r'] # Zone boundaries (um). Transposed such that each index is one zone boundary from 0 to 1058.
 
-    fig, ax = plt.subplots(figsize=(8,5)) 
+    fig, ax = plt.subplots(figsize=(6,4)) 
 
     gas_boundary = 79
     ch_boundary = 380
@@ -74,7 +74,7 @@ def LinePlot_Radius_v_Time(data, laserTime, laserPow):
     ax.set_ylabel('Radius ($\\mathrm{\\mu}$m)')
     ax.set_xlabel('Time (ns)')
     ax.set_title('Time Plot of Lagrangian Zone Boundaries')
-    # fig.savefig('r_vs_t_plot.pdf', format='pdf') # Optional save figure as pdf vector graphic for Latex figures
+    # fig.savefig('r_vs_t_plot.pdf', format='svg') # Optional save figure as pdf vector graphic for Latex figures
 
 def LinePlot_v_Time(data, laserTime, laserPow, variable="r"):
     """
@@ -157,7 +157,8 @@ def Colormap(data, laserTime, laserPow, variable="rho", log=False):
     X, Y = np.meshgrid(xdata, ydata[0, :])  # Meshgrid for plotting
 
     if log:
-        Z = np.log10(data[variable]).T          # Transpose to match meshgrid orientation
+        Z_calc = np.log10(data[variable]).T             # Transpose to match meshgrid orientation
+        Z = np.where(data[variable].T <= 0, np.min(Z_calc), Z_calc)  # Need this to handle log(0)
     else:
         Z = data[variable].T
 
@@ -196,7 +197,7 @@ def Colormap(data, laserTime, laserPow, variable="rho", log=False):
     ### End of plotting code
 
     ### Print Z value at given coordinates (time,radius) 
-    userinput = input("Enter `x,y` = ").split(",")
+    userinput = input("Enter `x(ns),y(um)` = ").split(",")
     x, y = float(userinput[0]), float(userinput[1])
 
     i = (np.abs(xdata - x)).argmin()
@@ -277,20 +278,34 @@ if __name__=='__main__':
     # RadialProfile(data, time=2.65, variable="ti", title="Ion Temp")
     # RadialProfile(data, time=2.65, variable="te", )
 
+    xdata = 1E9*data['time'] # times (now nanoseconds),
+    # for i, time in enumerate(xdata):
+    #     print(i, time)
+    ## === Line Plots ===
+    # LinePlot_Radius_v_Time(data, laserTime, laserPow)
+    # LinePlot_v_Time(data, laserTime, laserPow, variable='te')
+    # RadialProfile(data, time=3.0, variable="dene", ylabel="$n_e$ (cm$^{-3}$)", title="Electron Density Radial Profile")
+
     ## === Color Plots (x,y,z = time,radius,`variable`) === 
     # Colormap_Density(data, laserTime, laserPow)
     # Colormap(data, laserTime, laserPow, variable="te", log=True)
     # Colormap(data, laserTime, laserPow, variable="dene", log=True)
 
-    # # === Radial Profile at given time ===
-    # time = 2.95
-    # fig, ax = plt.subplots(figsize=(6,3))
-    # ax2 = ax.twinx()
-    # Te_line = RadialProfile(data, time=time, ax=ax, color="#3072b1", title=None, xlim=(-120,120))
-    # ne_line = RadialProfile(data, time=time, variable="dene", ylabel="$n_e$ ($\\times 10^{24}$ cm$^{-3}$)", color="#A72626", label="$n_e$", linestyle="--", title="Electron Temperature and Density Radial Profile", xlim=(-120,120), ax=ax2)
-    # lines = Te_line + ne_line
-    # labels = [l.get_label() for l in lines]
-    # plt.legend(lines, labels, loc=0)
-    # fig.savefig('hyades_radial_profile.svg', format="svg", bbox_inches="tight")
-    
+
+    # Time snapshot of radial profile of Te and ne
+    time=2.95
+
+    fig, ax = plt.subplots(figsize=(6,3))
+    ax2 = ax.twinx()
+    Te_line = RadialProfile(data, time=time, ax=ax, color="#3072b1", title=None, xlim=(-120,120))
+    ne_line = RadialProfile(data, time=time, variable="dene", ylabel="$n_e$ (cm$^{-3}$)", color="#A72626", label="$n_e$", linestyle="--", title=f"$T_e$ and $n_e$ Radial Profile t = {time} ns", xlim=(-120,120), ax=ax2)
+    lines = Te_line + ne_line
+    labels = [l.get_label() for l in lines]
+    plt.legend(lines, labels, loc=0)
+    plt.show()
+    # # fig.savefig('hyades_radial_profile.svg', format="svg", bbox_inches="tight")
+
+    # R vs t
+    # LinePlot_Radius_v_Time(data, laserTime, laserPow)
+    # Colormap(data, laserTime, laserPow, variable="p", log=True)
     plt.show()
