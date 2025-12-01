@@ -274,6 +274,9 @@ if __name__=='__main__':
 
     # === Line Plots ===
     LinePlot_Radius_v_Time(data, laserTime, laserPow)
+    for time in [2.751,2.85,2.95,3.05]:
+        plt.axvline(x=time, color='blue', linestyle='--', lw=1)  # Example vertical line at 2.85 ns
+
     # LinePlot_v_Time(data, laserTime, laserPow, variable='ti')
     # RadialProfile(data, time=2.65, variable="ti", title="Ion Temp")
     # RadialProfile(data, time=2.65, variable="te", )
@@ -292,20 +295,20 @@ if __name__=='__main__':
     # Colormap(data, laserTime, laserPow, variable="dene", log=True)
 
 
-    # Time snapshot of radial profile of Te and ne
-    time=2.95
+    # # Time snapshot of radial profile of Te and ne
+    # time=2.95
 
-    fig, ax = plt.subplots(figsize=(6,3))
-    ax2 = ax.twinx()
-    Te_line = RadialProfile(data, time=time, ax=ax, color="#3072b1", title=None, xlim=(-120,120))
-    ne_line = RadialProfile(data, time=time, variable="dene", ylabel="$n_e$ (cm$^{-3}$)", color="#A72626", label="$n_e$", linestyle="--", title=f"$T_e$ and $n_e$ Radial Profile t = {time} ns", xlim=(-120,120), ax=ax2)
-    lines = Te_line + ne_line
-    labels = [l.get_label() for l in lines]
-    plt.legend(lines, labels, loc=0)
-    plt.show()
-    # # fig.savefig('hyades_radial_profile.svg', format="svg", bbox_inches="tight")
+    # fig, ax = plt.subplots(figsize=(6,3))
+    # ax2 = ax.twinx()
+    # Te_line = RadialProfile(data, time=time, ax=ax, color="#3072b1", title=None, xlim=(-120,120))
+    # ne_line = RadialProfile(data, time=time, variable="dene", ylabel="$n_e$ (cm$^{-3}$)", color="#A72626", label="$n_e$", linestyle="--", title=f"$T_e$ and $n_e$ Radial Profile t = {time} ns", xlim=(-120,120), ax=ax2)
+    # lines = Te_line + ne_line
+    # labels = [l.get_label() for l in lines]
+    # plt.legend(lines, labels, loc=0)
+    # plt.show()
+    # # # fig.savefig('hyades_radial_profile.svg', format="svg", bbox_inches="tight")
 
-    # R vs t
-    # LinePlot_Radius_v_Time(data, laserTime, laserPow)
-    # Colormap(data, laserTime, laserPow, variable="p", log=True)
+    # # R vs t
+    # # LinePlot_Radius_v_Time(data, laserTime, laserPow)
+    # # Colormap(data, laserTime, laserPow, variable="p", log=True)
     plt.show()
