@@ -1,5 +1,5 @@
 from pathlib import Path
-import netCDF4                  # can use this or scipy module in line below
+import netCDF4                  
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
@@ -41,7 +41,7 @@ def Load_Data(datafolderpath):
 
 def LinePlot_Radius_v_Time(data, laserTime, laserPow):
     """
-    Plot Zone Boundary Radius vs Time.
+    Plot Zone Boundary Positions vs Time.
     """
     # Plotting R vs Time
     xdata = 1E9*data['time'] # times (now nanoseconds),
@@ -62,7 +62,7 @@ def LinePlot_Radius_v_Time(data, laserTime, laserPow):
     # Overlay Laser Pulse Shape
     if (laserPow is not None) and (laserTime is not None):
         ax2 = ax.twinx()
-        lns3 = ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse", alpha = 0.7)
+        lns3 = ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, alpha=0.6, zorder=10, label="Laser Pulse")
         lines = lines + lns3
         ax2.set_ylabel("Laser Intensity ($10^{12}$ W cm$^{-2}$)")
     else:
@@ -78,7 +78,7 @@ def LinePlot_Radius_v_Time(data, laserTime, laserPow):
 
 def LinePlot_v_Time(data, laserTime, laserPow, variable="r"):
     """
-    Same as above but plots specified variable
+    Plot Zone Variable vs Time
     """
     # Plotting R vs Time
     xdata = 1E9*data['time'] # times (now nanoseconds),
@@ -94,7 +94,7 @@ def LinePlot_v_Time(data, laserTime, laserPow, variable="r"):
     # Overlay Laser Pulse Shape
     if (laserPow is not None) and (laserTime is not None):
         ax2 = ax.twinx()
-        ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse")
+        ax2.plot(laserTime, laserPow, color="red", linestyle="--", alpha=0.6, linewidth=2, zorder=10, label="Laser Pulse")
         ax2.legend(loc='lower left')
         ax2.set_ylabel("Laser Power (TW)")
     else:
@@ -129,7 +129,7 @@ def Colormap_Density(data, laserTime, laserPow):
     # Optional laser plot
     if (laserPow is not None) and (laserTime is not None):
         ax2 = ax.twinx()
-        ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse")
+        ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse", alpha=0.6)
         ax2.legend(loc="lower left")
         ax2.set_ylabel("Laser Power (TW)")
     else:
@@ -147,9 +147,9 @@ def Colormap_Density(data, laserTime, laserPow):
     
     # fig.savefig("./si_siImplosion.png", bbox_inches='tight', pad_inches=0.0)
 
-def Colormap(data, laserTime, laserPow, variable="rho", log=False):
+def Colormap(data, laserTime, laserPow, variable="dene", log=False):
     """
-    Same as above but for a specified variable.
+    Plots the specified variable as a colormap over time and radius.
     """
     # Create Grid
     xdata = 1E9 * data['time']           # Time in nanoseconds
@@ -178,7 +178,7 @@ def Colormap(data, laserTime, laserPow, variable="rho", log=False):
     # Optional laser plot
     if (laserPow is not None) and (laserTime is not None):
         ax2 = ax.twinx()
-        ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse")
+        ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse", alpha=0.6)
         ax2.legend(loc="lower left")
         ax2.set_ylabel("Laser Power (TW)")
     else:
@@ -196,22 +196,22 @@ def Colormap(data, laserTime, laserPow, variable="rho", log=False):
 
     ### End of plotting code
 
-    ### Print Z value at given coordinates (time,radius) 
-    userinput = input("Enter `x(ns),y(um)` = ").split(",")
-    x, y = float(userinput[0]), float(userinput[1])
+    # ### Print Z value at given coordinates (time,radius) 
+    # userinput = input("Enter `x(ns),y(um)` = ").split(",")
+    # x, y = float(userinput[0]), float(userinput[1])
 
-    i = (np.abs(xdata - x)).argmin()
-    j = (np.abs(ydata[0, :] - y)).argmin()
-    print(i,y)
-    try:
-        value = Z[i, j]
-        print(f"Z({x:.2f} ns, {y:.2f} µm) = {value:.3g}")
-    except IndexError:
-        print(f"Coordinate out of range: ({x}, {y})")
+    # i = (np.abs(xdata - x)).argmin()
+    # j = (np.abs(ydata[0, :] - y)).argmin()
+    # print(i,y)
+    # try:
+    #     value = Z[i, j]
+    #     print(f"Z({x:.2f} ns, {y:.2f} µm) = {value:.3g}")
+    # except IndexError:
+    #     print(f"Coordinate out of range: ({x}, {y})")
 
 def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Radial Profile", xlabel="x (um)", ylabel="$T_e$ (keV)", xlim=(0,100), label="$T_e$", linestyle = "-", color="black", ax = None):
     """
-    Plots radial profile of specified variable. By default, plots electron temperature "te".
+    Plots radial profile of specified variable. By default, plots electron temperature "te". Data is reflected about x=0.
     
     Arguments
     ---
@@ -254,7 +254,7 @@ def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Rad
 
 def PrintTimes(data):
     """
-    Prints available dump times in the data.
+    Prints dump times in the data.
     """
     times = data['time'] * 1E9 # Convert to ns
     print("Timedumps (from i=1)\nindex,ns:")
@@ -270,45 +270,20 @@ if __name__=='__main__':
     ## === Load in Data ===
     datafolderpath = Path('shots/98263/')
     data, laserTime, laserPow = Load_Data(datafolderpath)
-    PrintTimes(data)
-
-    # === Line Plots ===
-    LinePlot_Radius_v_Time(data, laserTime, laserPow)
-    for time in [2.751,2.85,2.95,3.05]:
-        plt.axvline(x=time, color='blue', linestyle='--', lw=1)  # Example vertical line at 2.85 ns
-
-    # LinePlot_v_Time(data, laserTime, laserPow, variable='ti')
-    # RadialProfile(data, time=2.65, variable="ti", title="Ion Temp")
-    # RadialProfile(data, time=2.65, variable="te", )
 
     xdata = 1E9*data['time'] # times (now nanoseconds),
-    # for i, time in enumerate(xdata):
-    #     print(i, time)
-    ## === Line Plots ===
-    # LinePlot_Radius_v_Time(data, laserTime, laserPow)
-    # LinePlot_v_Time(data, laserTime, laserPow, variable='te')
-    # RadialProfile(data, time=3.0, variable="dene", ylabel="$n_e$ (cm$^{-3}$)", title="Electron Density Radial Profile")
 
-    ## === Color Plots (x,y,z = time,radius,`variable`) === 
-    # Colormap_Density(data, laserTime, laserPow)
-    # Colormap(data, laserTime, laserPow, variable="te", log=True)
-    # Colormap(data, laserTime, laserPow, variable="dene", log=True)
+    # Time snapshot of radial profile of Te and ne
+    time=2.95
 
+    fig, ax = plt.subplots(figsize=(6,3))
+    ax2 = ax.twinx()
+    Te_line = RadialProfile(data, time=time, ax=ax, color="#3072b1", title=None, xlim=(-120,120))
+    ne_line = RadialProfile(data, time=time, variable="dene", ylabel="$n_e$ (cm$^{-3}$)", color="#A72626", label="$n_e$", linestyle="--", title=f"$T_e$ and $n_e$ Radial Profile t = {time} ns", xlim=(-120,120), ax=ax2)
+    lines = Te_line + ne_line
+    labels = [l.get_label() for l in lines]
+    plt.legend(lines, labels, loc=0)
+    plt.show()
+    # # fig.savefig('hyades_radial_profile.svg', format="svg", bbox_inches="tight")
 
-    # # Time snapshot of radial profile of Te and ne
-    # time=2.95
-
-    # fig, ax = plt.subplots(figsize=(6,3))
-    # ax2 = ax.twinx()
-    # Te_line = RadialProfile(data, time=time, ax=ax, color="#3072b1", title=None, xlim=(-120,120))
-    # ne_line = RadialProfile(data, time=time, variable="dene", ylabel="$n_e$ (cm$^{-3}$)", color="#A72626", label="$n_e$", linestyle="--", title=f"$T_e$ and $n_e$ Radial Profile t = {time} ns", xlim=(-120,120), ax=ax2)
-    # lines = Te_line + ne_line
-    # labels = [l.get_label() for l in lines]
-    # plt.legend(lines, labels, loc=0)
-    # plt.show()
-    # # # fig.savefig('hyades_radial_profile.svg', format="svg", bbox_inches="tight")
-
-    # # R vs t
-    # # LinePlot_Radius_v_Time(data, laserTime, laserPow)
-    # # Colormap(data, laserTime, laserPow, variable="p", log=True)
     plt.show()
