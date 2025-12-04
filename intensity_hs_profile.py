@@ -42,16 +42,20 @@ if __name__=='__main__':
         print(f"{tindex}, {times[tindex]:.4g}")
         r_shell = data['r'][tindex,79]*1e4  # Example: print radius at index 78 in microns
         dti_path = Path(f"spect3d/20251201_98263_fuelonly_t268-345/results_01/t0{tindex}/20251201_98263_fuelonly_t268-345_0{tindex}.dti")
+        dti_path_noAr = Path(f"spect3d/98263_NoAr_t268-345/results_01/t0{tindex}/98263_NoAr_t268-345_0{tindex}.dti")
 
         fig, ax = plt.subplots(nrows=2, figsize=(7,4), sharex=True)
 
         # Top Plot: Radial Profile of Intensity
         intensity = load_dti(dti_path)
-        ax[0].plot(intensity[0], np.log10(intensity[1]), color="#00b45a", label="Intensity")
+        intensity_noAr = load_dti(dti_path_noAr)
+        ax[0].plot(intensity[0], (intensity[1]), color="#00b45a", label="DD Ar 0.25%")
+        ax[0].plot(intensity_noAr[0], (intensity_noAr[1]), color="#b40087", label="DD")
         ax[0].axvspan(-r_shell, r_shell, color='gray', alpha=0.2, label='Fuel Region')
         ax[0].legend()
         ax[1].axvspan(-r_shell, r_shell, color='gray', alpha=0.2, label='Fuel Region')
-        ax[0].set_ylabel("$log_{{10}}$(I) (arb.)")
+        # ax[0].set_ylabel("$log_{{10}}$(I) (arb.)")
+        ax[0].set_ylabel("I (arb.)")
         ax[0].set_title(f"(Top) Spect3D Intensity Profile\n(Bottom) $T_e$ and $n_e$ Profile")
         ax[0].text(0.95, 0.95, f'$t = {time:.2f}$ ns',horizontalalignment='right',verticalalignment='top',transform = ax[0].transAxes)
         # Bottom Plot: Radial Profile of Te and ne
