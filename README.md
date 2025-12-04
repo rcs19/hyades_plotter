@@ -1,10 +1,10 @@
 # Hyades_Plotter
 
-This repository has code for plotting NetCDF output files from Hyades. The plots can either be created in Python/Jupyter (`.py` and `.ipynb` files) or in IDL (`.pro` files).
+This repository has code for plotting NetCDF output files from Hyades.
 
-## Python Script - `main.py`
+## Usage - `hyades_plotter.py`
 
-This script contains plotting functions for Hyades outputs and requires a .cdf NetCDF output file. If you do not have a .cdf file, you can use the Hyades utility `PPF2NCDF` to generate one from the .ppf (see Hyades manual).
+Use this script to run plotting functions to visualise Hyades outputs. The script requires a .cdf NetCDF output file. If you do not have a .cdf file, you can use the Hyades utility `PPF2NCDF` to generate one from the .ppf (see Hyades manual).
 
 This script can:
 1. Plot the time evolution of a specified variable for each Lagrangian zone.
