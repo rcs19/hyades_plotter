@@ -109,22 +109,21 @@ def Colormap_Density(data, laserTime, laserPow):
     Plots the density over time. 
     """
     # Create Grid
-    xdata = 1E9 * data['time']           # Time in nanoseconds
-    ydata = 1E4 * data['r']              # Radius in micrometers
-    X, Y = np.meshgrid(xdata, ydata[0, :])  # Meshgrid for plotting
-    Z = np.log10(data['rho'].T)          # Transpose to match meshgrid orientation
+    xdata = 1E9 * data['time']              # Time in nanoseconds
+    ydata = 1E4 * data['rcm'][:,1:-1]       # Radius in micrometers
+    X, Y = np.meshgrid(xdata, ydata[0, :])  # Meshgrid for plotting, use first time index for ydata shape
+    Z = np.log10(data['rho'].T)             # Transpose to match meshgrid orientation
     minimum = np.min(np.log10(data['rho'][:, 0]))
 
     # Create figure and axis
     fig, ax = plt.subplots(figsize=(9,5))
 
     # Main pcolormesh plot
-    pc = ax.pcolormesh(X[:-1,], 
-                       ydata.T[:-1,], 
+    pc = ax.pcolormesh(X[:,], 
+                       ydata.T[:,], 
                        Z,
                        vmin=minimum, # vmin defines the minimum data range, i.e. minimum density
-                       cmap='viridis'
-                       )
+                       cmap='viridis')
 
     # Optional laser plot
     if (laserPow is not None) and (laserTime is not None):
@@ -153,7 +152,11 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False):
     """
     # Create Grid
     xdata = 1E9 * data['time']           # Time in nanoseconds
-    ydata = 1E4 * data['r']              # Radius in micrometers
+    # y-axis: Radius in micrometers
+    if variable == "tr":    # Zone radiation temperature indexes from 0 to nzones
+        ydata = 1E4 * data['rcm'][:,:-1]       
+    else:                   # Other zone variables index from 1 to nzones
+        ydata = 1E4 * data['rcm'][:,1:-1]       
     X, Y = np.meshgrid(xdata, ydata[0, :])  # Meshgrid for plotting
 
     if log:
@@ -168,8 +171,8 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False):
     fig, ax = plt.subplots(figsize=(9,5))
 
     # Main pcolormesh plot
-    pc = ax.pcolormesh(X[:-1,], 
-                       ydata.T[:-1,], 
+    pc = ax.pcolormesh(X[:,], 
+                       ydata.T[:,], 
                        Z,
                        vmin=minimum, # vmin defines the minimum data range, i.e. minimum density
                        cmap='viridis'
@@ -209,7 +212,7 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False):
     # except IndexError:
     #     print(f"Coordinate out of range: ({x}, {y})")
 
-def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Radial Profile", xlabel="x (um)", ylabel="$T_e$ (keV)", xlim=(0,100), label="$T_e$", linestyle = "-", color="black", ax = None):
+def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Radial Profile", xlabel="x (um)", ylabel="$T_e$ (keV)", xlim=(0,100), label=None, linestyle = "-", color="black", ax = None):
     """
     Plots radial profile of specified variable. By default, plots electron temperature "te". Data is reflected about x=0.
     
@@ -231,11 +234,16 @@ def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Rad
         - x-axis limits (um), default = (0,100)
     """
     time_index = (np.abs(data['time'] - float(time)*1e-9)).argmin()
-    xdata = 1e4 * data['r'][time_index,:-1]
-    ydata = data[variable][time_index,]
-    if variable == "dene":
-        ydata = ydata * 1e-24
-    # print(data['time'][time_index,])
+    ydata = data[variable][time_index,:]
+
+    # rcm indexes from 0 to nzones+1, first and last index are 0.0
+    if variable in  ['rho','ti','te','p','tn','fE','dene',]: # these variables index from 1 to nzones
+        xdata = 1e4 * data['rcm'][time_index,1:-1] 
+        if variable == "dene":
+            ydata = ydata * 1e-24
+    elif variable == "tr":  # Zone radiation temperature indexes from 0 to nzones
+        xdata = 1e4 * data['rcm'][time_index,1:-1] 
+        ydata = ydata[1:]   # ignore index 0 where tr = 1e-4
 
     # Mirror x along the y-axis
     xdata = np.concatenate([-xdata[::-1], xdata])
@@ -245,7 +253,7 @@ def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Rad
     if ax is None:
         fig, ax = plt.subplots()
         ext_axis = False
-    lineplot = ax.plot(xdata, ydata, label=label, ls=linestyle, color=color)
+    lineplot = ax.plot(xdata, ydata, label=(variable if label is None else label), ls=linestyle, color=color)
     ax.set_xlim(xlim)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
