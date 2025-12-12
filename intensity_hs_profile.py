@@ -60,9 +60,10 @@ if __name__=='__main__':
         ax[0].text(0.95, 0.95, f'$t = {time:.2f}$ ns',horizontalalignment='right',verticalalignment='top',transform = ax[0].transAxes)
         # Bottom Plot: Radial Profile of Te and ne
         ax2 = ax[1].twinx()
-        Te_line = RadialProfile(data, time=time, color="#3072b1", title=None, xlim=xlim, ax=ax[1])
-        ne_line = RadialProfile(data, time=time, variable="dene", ylabel="$n_e$ ($\\times 10^{24}$ cm$^{-3}$)", color="#A72626", label="$n_e$", linestyle="--", title="", xlim=xlim, ax=ax2)
-        lines = Te_line + ne_line
+        Te_line = RadialProfile(data, time=time, variable="te", color="#3072b1", title=None, xlim=xlim, ax=ax[1])
+        Tr_line = RadialProfile(data, time=time, variable="tr", color="#fffb00", title=None, xlim=xlim, ax=ax[1])
+        ne_line = RadialProfile(data, time=time, variable="dene", ylabel="$n_e$ ($\\times 10^{24}$ cm$^{-3}$)", color="#A72626", label="$n_e$", linestyle="--", title="", xlim=xlim, ax=ax2)#
+        lines = Te_line + Tr_line + ne_line
         labels = [l.get_label() for l in lines]
         plt.legend(lines, labels, loc=0)
         # fig.savefig('hyades_radial_profile.svg', format="svg", bbox_inches="tight")
