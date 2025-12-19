@@ -241,10 +241,12 @@ def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Rad
         xdata = 1e4 * data['rcm'][time_index,1:-1] 
         if variable == "dene":
             ydata = ydata * 1e-24
+        elif variable == "p": 
+            ydata = ydata * 1E-6 * 1E-9 # Convert pressure from dyne/cm2 (= 1 barye) to Gbar (1 baryre = 1E-6 bar)
+            # print("")
     elif variable == "tr":  # Zone radiation temperature indexes from 0 to nzones
         xdata = 1e4 * data['rcm'][time_index,1:-1] 
         ydata = ydata[1:]   # ignore index 0 where tr = 1e-4
-
     # Mirror x along the y-axis
     xdata = np.concatenate([-xdata[::-1], xdata])
     ydata = np.concatenate([ydata[::-1], ydata])

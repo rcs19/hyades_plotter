@@ -28,11 +28,20 @@ if __name__=='__main__':
     #     plt.axvline(x=time, color='blue', linestyle='--', lw=1, alpha=0.5)  
 
     # LinePlot_v_Time(data, laserTime, laserPow, variable='te') 
-    # RadialProfile(data, time=3.0, variable="dene", ylabel="$n_e$ (cm$^{-3}$)", title="Electron Density Radial Profile", xlim=(-100,100))
+    fig, ax = plt.subplots()
+    l1 = RadialProfile(data, time=3.0, variable="dene", ylabel="$n_e$ (cm$^{-3}$)", title="Electron Density Radial Profile", xlim=(-100,100), ax=ax)
+    # ax2 = ax.twinx()
+    ax3 = ax.twinx()
+    # l2 = RadialProfile(data, time=3.0, variable="rho", ylabel="$\\rho$ (g cm$^{-3}$)", title="", xlim=(-100,100), ax=ax, color='orange')
+    # l3 = RadialProfile(data, time=3.0, variable="te", ylabel="$T_e$ (keV)", title="", xlim=(-100,100), ax=ax2, color='green')
+    l4 = RadialProfile(data, time=3.0, variable="p", ylabel="p (Gbar)", title="", xlim=(-100,100), ax=ax3, color='blue')
+    lns = l1 + l4
+    labs = [l.get_label() for l in lns]
+    ax.legend(lns, labs, loc=0)
 
     ## === Color Plots (x,y,z = time,radius,`variable`) === 
     # Colormap_Density(data, laserTime, laserPow)
-    Colormap(data, laserTime, laserPow, variable="fE", log=False)
+    # Colormap(data, laserTime, laserPow, variable="fE", log=False)
     # Colormap(data, laserTime, laserPow, variable="dene", log=True)
 
     plt.show()
