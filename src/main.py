@@ -69,6 +69,8 @@ def LinePlot_Radius_v_Time(data, laserTime, laserPow):
         print("No laser data")
 
     # --- Click Event Handler ---
+    click_marker, = ax.plot([], [], marker='x', color='red', markersize=10, )
+    click_text = ax.text(0.95, 0.6, '', fontsize=12, color='white', va='center', ha='right', bbox=dict(facecolor='black', alpha=0.9, edgecolor='none'), transform=ax.transAxes)
     def on_click(event):
         if event.inaxes is not None:
             # 1. Convert click from display pixels to ax's data coordinates
@@ -85,7 +87,11 @@ def LinePlot_Radius_v_Time(data, laserTime, laserPow):
             if 0 <= ix < data['te'].shape[0] and 0 <= iy < data['te'].shape[1]:
                 te_val = data['te'][ix, iy]      # Removed .T if using raw data indices
                 dene_val = data['dene'][ix, iy]
-
+                # 3. Update the marker position
+                click_marker.set_data([x_ax], [y_ax])
+                # click_text.set_position((x_ax, y_ax+20))
+                click_text.set_text(f'T$_{{e}} = {te_val:.3f}$ keV\nn$_{{e}} = {dene_val:.2e}$ g cm$^{{-3}}$')
+                fig.canvas.draw_idle() # Redraws everything efficiently                
                 print(f"\nClick event: {x_ax:.2f} ns, {y_ax:.2f} µm")
                 print(f"Te = {te_val:.3f} keV, ne = {dene_val:.3e} g/cm³")
             else:
@@ -166,12 +172,14 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False):
     if (laserPow is not None) and (laserTime is not None):
         ax2 = ax.twinx()
         ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse", alpha=0.6)
-        ax2.legend(loc="lower left")
+        # ax2.legend(loc="lower left")
         ax2.set_ylabel("Laser Power (TW)")
     else:
         print("No Laser Pulse data passed")
 
     # --- Click Event Handler ---
+    click_marker, = ax.plot([], [], marker='x', color='red', markersize=10, )
+    click_text = ax.text(0.95, 0.9, '', fontsize=12, color='white', va='center', ha='right', bbox=dict(facecolor='black', alpha=0.9, edgecolor='none'), transform=ax.transAxes)
     def on_click(event):
         if event.inaxes is not None:
             # 1. Convert click from display pixels to ax's data coordinates
@@ -188,7 +196,11 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False):
             if 0 <= ix < data['te'].shape[0] and 0 <= iy < data['te'].shape[1]:
                 te_val = data['te'][ix, iy]      # Removed .T if using raw data indices
                 dene_val = data['dene'][ix, iy]
-
+                # 3. Update the marker position
+                click_marker.set_data([x_ax], [y_ax])
+                # click_text.set_position((x_ax, y_ax+20))
+                click_text.set_text(f'T$_{{e}} = {te_val:.3f}$ keV\nn$_{{e}} = {dene_val:.2e}$ g cm$^{{-3}}$')
+                fig.canvas.draw_idle() # Redraws everything efficiently                
                 print(f"\nClick event: {x_ax:.2f} ns, {y_ax:.2f} µm")
                 print(f"Te = {te_val:.3f} keV, ne = {dene_val:.3e} g/cm³")
             else:
