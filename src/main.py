@@ -68,6 +68,33 @@ def LinePlot_Radius_v_Time(data, laserTime, laserPow):
     else:
         print("No laser data")
 
+    # --- Click Event Handler ---
+    def on_click(event):
+        if event.inaxes is not None:
+            # 1. Convert click from display pixels to ax's data coordinates
+            # This ignores which axes is 'on top' and uses ax's scale
+            inv = ax.transData.inverted()
+            x_ax, y_ax = inv.transform((event.x, event.y))
+
+            # 2. Find the index of the nearest Time and Radius using transformed coords
+            ix = (np.abs(xdata - x_ax)).argmin()
+            iy = (np.abs(ydata[ix, :] - y_ax)).argmin()
+
+            # 3. Extract the values
+            # Ensure indices are within bounds
+            if 0 <= ix < data['te'].shape[0] and 0 <= iy < data['te'].shape[1]:
+                te_val = data['te'][ix, iy]      # Removed .T if using raw data indices
+                dene_val = data['dene'][ix, iy]
+
+                print(f"\nClick event: {x_ax:.2f} ns, {y_ax:.2f} µm")
+                print(f"Te = {te_val:.3f} keV, ne = {dene_val:.3e} g/cm³")
+            else:
+                print(data['te'].shape)
+                print(f"\nClick event: {ix}, {iy}")
+                print("Click was outside the data range.")
+
+    cid = fig.canvas.mpl_connect('button_press_event', on_click)
+    
     labels = [l.get_label() for l in lines]
     ax.legend(lines, labels, loc=0)
     ax.set_ylim([0,500])
@@ -104,48 +131,6 @@ def LinePlot_v_Time(data, laserTime, laserPow, variable="r"):
     ax.set_ylabel(variable)
     ax.set_xlabel('Time (ns)')
 
-def Colormap_Density(data, laserTime, laserPow):
-    """
-    Plots the density over time. 
-    """
-    # Create Grid
-    xdata = 1E9 * data['time']              # Time in nanoseconds
-    ydata = 1E4 * data['rcm'][:,1:-1]       # Radius in micrometers
-    X, Y = np.meshgrid(xdata, ydata[0, :])  # Meshgrid for plotting, use first time index for ydata shape
-    Z = np.log10(data['rho'].T)             # Transpose to match meshgrid orientation
-    minimum = np.min(np.log10(data['rho'][:, 0]))
-
-    # Create figure and axis
-    fig, ax = plt.subplots(figsize=(9,5))
-
-    # Main pcolormesh plot
-    pc = ax.pcolormesh(X[:,], 
-                       ydata.T[:,], 
-                       Z,
-                       vmin=minimum, # vmin defines the minimum data range, i.e. minimum density
-                       cmap='viridis')
-
-    # Optional laser plot
-    if (laserPow is not None) and (laserTime is not None):
-        ax2 = ax.twinx()
-        ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse", alpha=0.6)
-        ax2.legend(loc="lower left")
-        ax2.set_ylabel("Laser Power (TW)")
-    else:
-        print("No Laser Pulse data passed")
-
-    # Colorbar
-    plt.subplots_adjust(right=0.8) # Make space for colorbar
-    cax = fig.add_axes([ax.get_position().x1+0.08,ax.get_position().y0,0.04,ax.get_position().height])
-    plt.colorbar(pc, cax=cax, label=r"log$_{10}$(Mass Density (g/cm$^3$))") # Similar to fig.colorbar(im, cax = cax)
-
-    # Legend and labels
-    ax.set_ylim([0, 500])
-    ax.set_xlabel("Time (ns)")
-    ax.set_ylabel(r'Radius ($\mu$m)')
-    
-    # fig.savefig("./si_siImplosion.png", bbox_inches='tight', pad_inches=0.0)
-
 def Colormap(data, laserTime, laserPow, variable="dene", log=False):
     """
     Plots the specified variable as a colormap over time and radius.
@@ -166,7 +151,6 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False):
         Z = data[variable].T
 
     minimum = np.min(Z[0,:])
-    print(np.max(Z))
     # Create figure and axis
     fig, ax = plt.subplots(figsize=(9,5))
 
@@ -187,6 +171,33 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False):
     else:
         print("No Laser Pulse data passed")
 
+    # --- Click Event Handler ---
+    def on_click(event):
+        if event.inaxes is not None:
+            # 1. Convert click from display pixels to ax's data coordinates
+            # This ignores which axes is 'on top' and uses ax's scale
+            inv = ax.transData.inverted()
+            x_ax, y_ax = inv.transform((event.x, event.y))
+
+            # 2. Find the index of the nearest Time and Radius using transformed coords
+            ix = (np.abs(xdata - x_ax)).argmin()
+            iy = (np.abs(ydata[ix, :] - y_ax)).argmin()
+
+            # 3. Extract the values
+            # Ensure indices are within bounds
+            if 0 <= ix < data['te'].shape[0] and 0 <= iy < data['te'].shape[1]:
+                te_val = data['te'][ix, iy]      # Removed .T if using raw data indices
+                dene_val = data['dene'][ix, iy]
+
+                print(f"\nClick event: {x_ax:.2f} ns, {y_ax:.2f} µm")
+                print(f"Te = {te_val:.3f} keV, ne = {dene_val:.3e} g/cm³")
+            else:
+                print(data['te'].shape)
+                print(f"\nClick event: {ix}, {iy}")
+                print("Click was outside the data range.")
+
+    cid = fig.canvas.mpl_connect('button_press_event', on_click)
+    
     # Colorbar
     plt.subplots_adjust(right=0.8) # Make space for colorbar
     cax = fig.add_axes([ax.get_position().x1+0.08,ax.get_position().y0,0.04,ax.get_position().height])
