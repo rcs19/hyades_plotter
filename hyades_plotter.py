@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-from src.main import Load_Data, LinePlot_Radius_v_Time, LinePlot_v_Time, Colormap, Colormap_Density, RadialProfile, PrintTimes
+from src.main import Load_Data, LinePlot_Radius_v_Time, LinePlot_v_Time, Colormap, RadialProfile, PrintTimes
 
 if __name__=='__main__':
 
@@ -22,26 +22,25 @@ if __name__=='__main__':
     datafolderpath = Path('shots/98263/')
     data, laserTime, laserPow = Load_Data(datafolderpath)
 
-    # === Line Plots ===
-    # LinePlot_Radius_v_Time(data, laserTime, laserPow) 
-    # for time in [2.65,2.75,2.85,2.95,3.05]:    # Plot MMI acquisition times on top of plotted graph
-    #     plt.axvline(x=time, color='blue', linestyle='--', lw=1, alpha=0.5)  
+    # # === Line Plots ===
+    LinePlot_Radius_v_Time(data, laserTime, laserPow) 
+    for time in [2.65,2.75,2.85,2.95,3.05]:    # Plot MMI acquisition times on top of plotted graph
+        plt.axvline(x=time, color='blue', linestyle='--', lw=1, alpha=0.5)  
 
     # LinePlot_v_Time(data, laserTime, laserPow, variable='te') 
-    fig, ax = plt.subplots()
-    l1 = RadialProfile(data, time=3.0, variable="dene", ylabel="$n_e$ (cm$^{-3}$)", title="Electron Density Radial Profile", xlim=(-100,100), ax=ax)
-    # ax2 = ax.twinx()
-    ax3 = ax.twinx()
-    # l2 = RadialProfile(data, time=3.0, variable="rho", ylabel="$\\rho$ (g cm$^{-3}$)", title="", xlim=(-100,100), ax=ax, color='orange')
-    # l3 = RadialProfile(data, time=3.0, variable="te", ylabel="$T_e$ (keV)", title="", xlim=(-100,100), ax=ax2, color='green')
-    l4 = RadialProfile(data, time=3.0, variable="p", ylabel="p (Gbar)", title="", xlim=(-100,100), ax=ax3, color='blue')
-    lns = l1 + l4
-    labs = [l.get_label() for l in lns]
-    ax.legend(lns, labs, loc=0)
+    # fig, ax = plt.subplots()
+    # l1 = RadialProfile(data, time=3.0, variable="dene", ylabel="$n_e$ (cm$^{-3}$)", title="Electron Density Radial Profile", xlim=(-100,100), ax=ax)
+    # # ax2 = ax.twinx()
+    # # l2 = RadialProfile(data, time=3.0, variable="rho", ylabel="$\\rho$ (g cm$^{-3}$)", title="", xlim=(-100,100), ax=ax, color='orange')
+    # ax3 = ax.twinx()
+    # # l3 = RadialProfile(data, time=3.0, variable="te", ylabel="$T_e$ (keV)", title="", xlim=(-100,100), ax=ax2, color='green')
+    # l4 = RadialProfile(data, time=3.0, variable="p", ylabel="p (Gbar)", title="", xlim=(-100,100), ax=ax3, color='blue')
+    # lns = l1 + l4
+    # labs = [l.get_label() for l in lns]
+    # ax.legend(lns, labs, loc=0)
 
     ## === Color Plots (x,y,z = time,radius,`variable`) === 
-    # Colormap_Density(data, laserTime, laserPow)
-    # Colormap(data, laserTime, laserPow, variable="fE", log=False)
-    # Colormap(data, laserTime, laserPow, variable="dene", log=True)
+    # Colormap(data, laserTime, laserPow, variable="te", log=False)
+    Colormap(data, laserTime, laserPow, variable="te", log=False)
 
     plt.show()
