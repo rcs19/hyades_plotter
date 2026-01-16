@@ -41,6 +41,6 @@ if __name__=='__main__':
 
     ## === Color Plots (x,y,z = time,radius,`variable`) === 
     # Colormap(data, laserTime, laserPow, variable="te", log=False)
-    Colormap(data, laserTime, laserPow, variable="dene", log=True)
+    Colormap(data, laserTime, laserPow, variable="rho", log=True)
 
     plt.show()
