@@ -34,10 +34,9 @@ if __name__=='__main__':
     times = data['time'] * 1E9 # Convert to ns
 
     # === Radial Profile at given time ===
-    time = 2.85 # Edit this (ns)
     xlim = (-120, 120)  # Edit this (microns)
     
-    for time in [2.751,2.85,2.95,3.05]:
+    for time in [2.85,2.9,2.95]: # [2.751,2.85,2.95,3.05]
         tindex = np.argmin(np.abs(times - time))  # Find timedump index at this time 
         print(f"{tindex}, {times[tindex]:.4g}")
         r_shell = data['r'][tindex,79]*1e4  # Example: print radius at index 78 in microns
@@ -51,9 +50,9 @@ if __name__=='__main__':
         intensity_noAr = load_dti(dti_path_noAr)
         ax[0].plot(intensity[0], (intensity[1]), color="#00b45a", label="DD Ar 0.25%")
         ax[0].plot(intensity_noAr[0], (intensity_noAr[1]), color="#b40087", label="DD")
-        ax[0].axvspan(-r_shell, r_shell, color='gray', alpha=0.2, label='Fuel Region')
+        ax[0].axvspan(-r_shell, r_shell, color='gray', alpha=0.2, label='Core Region')
         ax[0].legend()
-        ax[1].axvspan(-r_shell, r_shell, color='gray', alpha=0.2, label='Fuel Region')
+        ax[1].axvspan(-r_shell, r_shell, color='gray', alpha=0.2, label='Core Region')
         # ax[0].set_ylabel("$log_{{10}}$(I) (arb.)")
         ax[0].set_ylabel("I (arb.)")
         ax[0].set_title(f"(Top) Spect3D Intensity Profile\n(Bottom) $T_e$ and $n_e$ Profile")
@@ -61,11 +60,11 @@ if __name__=='__main__':
         # Bottom Plot: Radial Profile of Te and ne
         ax2 = ax[1].twinx()
         Te_line = RadialProfile(data, time=time, variable="te", color="#3072b1", title=None, xlim=xlim, ax=ax[1])
-        Tr_line = RadialProfile(data, time=time, variable="tr", color="#fffb00", title=None, xlim=xlim, ax=ax[1])
+        # Tr_line = RadialProfile(data, time=time, variable="tr", color="#fffb00", title=None, xlim=xlim, ax=ax[1])
         ne_line = RadialProfile(data, time=time, variable="dene", ylabel="$n_e$ ($\\times 10^{24}$ cm$^{-3}$)", color="#A72626", label="$n_e$", linestyle="--", title="", xlim=xlim, ax=ax2)#
-        lines = Te_line + Tr_line + ne_line
+        lines = Te_line + ne_line # + Tr_line 
         labels = [l.get_label() for l in lines]
-        plt.legend(lines, labels, loc=0)
+        plt.legend(lines, labels, loc="upper left")
         # fig.savefig('hyades_radial_profile.svg', format="svg", bbox_inches="tight")
         
         fig.subplots_adjust(hspace=0)
