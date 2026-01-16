@@ -92,7 +92,7 @@ def LinePlot_Radius_v_Time(data, laserTime, laserPow):
                 # click_text.set_position((x_ax, y_ax+20))
                 click_text.set_text(f'T$_{{e}} = {te_val:.3f}$ keV\nn$_{{e}} = {dene_val:.2e}$ g cm$^{{-3}}$')
                 fig.canvas.draw_idle() # Redraws everything efficiently                
-                print(f"\nClick event: {x_ax:.2f} ns, {y_ax:.2f} µm")
+                print(f"\nClick event: {x_ax:.2f} ns, {y_ax:.2f} µm ({ix},{iy})")
                 print(f"Te = {te_val:.3f} keV, ne = {dene_val:.3e} g/cm³")
             else:
                 print(data['te'].shape)
@@ -179,7 +179,7 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False):
 
     # --- Click Event Handler ---
     click_marker, = ax.plot([], [], marker='x', color='red', markersize=10, )
-    click_text = ax.text(0.95, 1.05, '', fontsize=12, color='white', va='center', ha='right', bbox=dict(facecolor='black', alpha=0.9, edgecolor='none'), transform=ax.transAxes)
+    click_text = ax.text(0.95, 1.05, '', fontsize=11, color='white', va='center', ha='right', bbox=dict(facecolor='black', alpha=0.9, edgecolor='none'), transform=ax.transAxes)
     def on_click(event):
         if event.inaxes is not None:
             # 1. Convert click from display pixels to ax's data coordinates
@@ -196,13 +196,14 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False):
             if 0 <= ix < data['te'].shape[0] and 0 <= iy < data['te'].shape[1]:
                 te_val = data['te'][ix, iy]      # Removed .T if using raw data indices
                 dene_val = data['dene'][ix, iy]
+                pres_val = data['p'][ix, iy]
                 # 3. Update the marker position
                 click_marker.set_data([x_ax], [y_ax])
                 # click_text.set_position((x_ax, y_ax+20))
-                click_text.set_text(f'T$_{{e}} = {te_val:.3f}$ keV, n$_{{e}} = {dene_val:.2e}$ g cm$^{{-3}}$')
+                click_text.set_text(f'({x_ax:.2f} ns, {y_ax:.1f} µm): T$_{{e}} = {te_val:.3f}$ keV, n$_{{e}} = {dene_val:.2e}$ cm$^{{-3}}$, p = {pres_val* 1E-6 * 1E-9:.2f} Gbar')
                 fig.canvas.draw_idle() # Redraws everything efficiently                
-                print(f"\nClick event: {x_ax:.2f} ns, {y_ax:.2f} µm")
-                print(f"Te = {te_val:.3f} keV, ne = {dene_val:.3e} g/cm³")
+                print(f"\nClick event: {x_ax:.2f} ns, {y_ax:.2f} µm ({ix},{iy})")
+                print(f"({x_ax:.2f} ns, {y_ax:.2f} µm): Te = {te_val:.3f} keV, ne = {dene_val:.3e} cm$^{{-3}}$, p = {pres_val* 1E-6 * 1E-9:.2f} Gbar") # Convert pressure from dyne/cm2 (= 1 barye) to Gbar (1 baryre = 1E-6 bar)
             else:
                 print(data['te'].shape)
                 print(f"\nClick event: {ix}, {iy}")
