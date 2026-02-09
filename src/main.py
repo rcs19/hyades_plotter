@@ -240,7 +240,7 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False):
     # except IndexError:
     #     print(f"Coordinate out of range: ({x}, {y})")
 
-def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Radial Profile", xlabel="x (um)", ylabel="$T_e$ (keV)", xlim=(0,100), label=None, linestyle = "-", color="black", ax = None):
+def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Radial Profile", xlabel="x (um)", ylabel="$T_e$ (keV)", xlim=(0,100), label=None, linestyle = "-", color="black", ax = None, plot_shell_boundary=True):
     """
     Plots radial profile of specified variable. By default, plots electron temperature "te". Data is reflected about x=0.
     
@@ -275,14 +275,23 @@ def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Rad
     elif variable == "tr":  # Zone radiation temperature indexes from 0 to nzones
         xdata = 1e4 * data['rcm'][time_index,1:-1] 
         ydata = ydata[1:]   # ignore index 0 where tr = 1e-4
-    # Mirror x along the y-axis
-    xdata = np.concatenate([-xdata[::-1], xdata])
-    ydata = np.concatenate([ydata[::-1], ydata])
-
+    
     ext_axis = True
     if ax is None:
         fig, ax = plt.subplots()
         ext_axis = False
+
+    if plot_shell_boundary:
+        shell_radius_start = xdata[78]
+        shell_radius_end = xdata[227]
+        print(f"Shell boundary radius at t={time} ns: {shell_radius_start:.2f} - {shell_radius_end:.2f} um")
+        # ax.axvline(x=shell_boundary_radius, color='gray', linestyle='--', label='Shell Boundary', zorder=0)
+        ax.axvspan(xmin=shell_radius_start, xmax=shell_radius_end, color='gray', alpha=0.2, zorder=0)
+        ax.axvspan(xmin=-shell_radius_end, xmax=-shell_radius_start, color='gray', alpha=0.2, zorder=0)
+
+    # Mirror x along the y-axis
+    xdata = np.concatenate([-xdata[::-1], xdata])
+    ydata = np.concatenate([ydata[::-1], ydata])
     lineplot = ax.plot(xdata, ydata, label=(variable if label is None else label), ls=linestyle, color=color)
     ax.set_xlim(xlim)
     ax.set_xlabel(xlabel)
