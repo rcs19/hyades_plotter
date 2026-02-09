@@ -39,7 +39,7 @@ def Load_Data(datafolderpath):
     data = dict((label, datafile.variables[var][:]) for label, var in zip(variable_labels, variables_list))
     return data, laserTime, laserPow
 
-def LinePlot_Radius_v_Time(data, laserTime, laserPow):
+def LinePlot_Radius_v_Time(data, laserTime, laserPow, highlight_zones = None):
     """
     Plot Zone Boundary Positions vs Time.
     """
@@ -54,6 +54,10 @@ def LinePlot_Radius_v_Time(data, laserTime, laserPow):
 
     ax.plot(xdata, ydata[:,0:gas_boundary], c="#004B53", lw=0.2)            # Deuterium
     ax.plot(xdata, ydata[:,gas_boundary:ch_boundary], c="#3B3B3B", lw=0.2)  # Plastic
+
+    if highlight_zones is not None:
+        for zone in highlight_zones:
+            ax.plot(xdata, ydata[:,zone], c="orange", lw=2)
 
     line1 = ax.plot([], [], c="#3B3B3B", label='CH Plastic', lw=3) # Dummy Plot for Legend
     line2 = ax.plot([], [], c="#004B53", label='Deuterium', lw=3) # Dummy Plot for Legend
@@ -139,7 +143,7 @@ def LinePlot_v_Time(data, laserTime, laserPow, variable="r"):
     ax.set_ylabel(variable)
     ax.set_xlabel('Time (ns)')
 
-def Colormap(data, laserTime, laserPow, variable="dene", log=False):
+def Colormap(data, laserTime, laserPow, variable="dene", log=False, highlight_zones=None):
     """
     Plots the specified variable as a colormap over time and radius.
     """
@@ -178,6 +182,11 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False):
         ax2.set_ylabel("Laser Power (TW)")
     else:
         print("No Laser Pulse data passed")
+
+    if highlight_zones is not None:
+        ydata_r = 1E4*data['r'] # Zone boundaries (um). Transposed such that each index is one zone boundary from 0 to 1058.
+        for zone in highlight_zones:
+            ax.plot(xdata, ydata_r[:,zone], c="orange", lw=2)
 
     # --- Click Event Handler ---
     click_marker, = ax.plot([], [], marker='x', color='red', markersize=10, )
@@ -321,7 +330,7 @@ if __name__=='__main__':
     xdata = 1E9*data['time'] # times (now nanoseconds),
 
     # Time snapshot of radial profile of Te and ne
-    time=2.95
+    time=3
 
     fig, ax = plt.subplots(figsize=(6,3))
     ax2 = ax.twinx()
