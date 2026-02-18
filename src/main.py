@@ -143,7 +143,7 @@ def LinePlot_v_Time(data, laserTime, laserPow, variable="r"):
     ax.set_ylabel(variable)
     ax.set_xlabel('Time (ns)')
 
-def Colormap(data, laserTime, laserPow, variable="dene", log=False, highlight_zones=None):
+def Colormap(data, laserTime, laserPow, variable="dene", log=False, highlight_zones=None, highlight_frametimes=True):
     """
     Plots the specified variable as a colormap over time and radius.
     """
@@ -187,6 +187,10 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False, highlight_zo
         ydata_r = 1E4*data['r'] # Zone boundaries (um). Transposed such that each index is one zone boundary from 0 to 1058.
         for zone in highlight_zones:
             ax.plot(xdata, ydata_r[:,zone], c="orange", lw=2)
+    if highlight_frametimes:
+        for time in [2.65,2.75,2.85,2.95,3.05]:    # Plot MMI acquisition times on top of plotted graph
+            plt.axvline(x=time, color='blue', linestyle='--', lw=1, alpha=0.5)  
+
 
     # --- Click Event Handler ---
     click_marker, = ax.plot([], [], marker='x', color='red', markersize=10, )
