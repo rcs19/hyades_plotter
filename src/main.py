@@ -321,6 +321,20 @@ def PrintTimes(data):
     for i, t in enumerate(times):
         print(f"{i+1},{t:.3f}")
 
+def GetArealDensity(data, time=3.05, r1=78, r2=227):
+    """
+    Calculates areal density (rho*R) at a given time. Integrates over the density profile between the specified inner and outer radius indices (r1, r2). Returns areal density in g/cm^2.
+    """
+    time_index = (np.abs(data['time'] - float(time)*1e-9)).argmin()
+    ydata = data["rho"][time_index,:]
+    xdata = data['rcm'][time_index,1:-1] 
+
+    # Integrate density profile between r1 and r2 to get areal density
+    areal_density = np.trapezoid(ydata[r1:r2], x=xdata[r1:r2]) # Convert from g/cm^3 * um to g/cm^2
+    print(f"Areal Density (rho*R) at t={time} ns between r={xdata[r1]*1e4:.2f} um and r={xdata[r2]*1e4:.2f} um: {areal_density:.4f} g/cm^2")
+
+    return areal_density
+
 if __name__=='__main__':
 
     """
@@ -328,13 +342,13 @@ if __name__=='__main__':
     See Hyades User Manual p. 45 for variables and units
     """
     ## === Load in Data ===
-    datafolderpath = Path('shots/98263/')
+    datafolderpath = Path('shots/98252/')
     data, laserTime, laserPow = Load_Data(datafolderpath)
 
     xdata = 1E9*data['time'] # times (now nanoseconds),
 
     # Time snapshot of radial profile of Te and ne
-    time=3
+    time=2.9
 
     fig, ax = plt.subplots(figsize=(6,3))
     ax2 = ax.twinx()
@@ -343,7 +357,8 @@ if __name__=='__main__':
     lines = Te_line + ne_line
     labels = [l.get_label() for l in lines]
     plt.legend(lines, labels, loc=0)
-    plt.show()
+    # plt.show()
     # # fig.savefig('hyades_radial_profile.svg', format="svg", bbox_inches="tight")
 
+    GetArealDensity(data, time=2.9, r1=78, r2=227)
     plt.show()
