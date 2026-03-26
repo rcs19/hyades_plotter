@@ -1,5 +1,5 @@
 from pathlib import Path
-from main import Load_Data
+from plotfuncs import Load_Data
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
