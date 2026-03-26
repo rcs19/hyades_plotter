@@ -312,6 +312,72 @@ def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Rad
     ax.set_title(title)
     return lineplot
 
+def RadialProfileSlider(data, time=3.0, xlim=(-120,120), plot_shell_boundary=True):
+    """Interactive plot of $T_e$ and $n_e$ radial profiles with a time slider."""
+    from matplotlib.widgets import Slider
+
+    times_ns = data['time'] * 1e9
+    tmin = float(times_ns.min())
+    tmax = float(times_ns.max())
+
+    if time < tmin or time > tmax:
+        time = tmin
+
+    fig, ax_te = plt.subplots(figsize=(8,5))
+    plt.subplots_adjust(bottom=0.25)
+    ax_dene = ax_te.twinx()
+
+    line_te, = ax_te.plot([], [], color='#3072b1', lw=2, label='$T_e$ (keV)')
+    line_dene, = ax_dene.plot([], [], color='#A72626', lw=2, ls='--', label='$n_e$ (cm$^{-3}$)')
+
+    ax_te.set_xlabel('x (um)')
+    ax_te.set_ylabel('$T_e$ (keV)',)# color='#3072b1')
+    ax_dene.set_ylabel('$n_e$ (cm$^{-3}$)',)# color='#A72626')
+    ax_te.set_title('Radial Profile: $T_e$ and $n_e$')
+
+    shell_patches = []
+
+    def draw_profile(cur_time):
+        nonlocal shell_patches
+        idx = (np.abs(times_ns - float(cur_time))).argmin()
+
+        xdata = 1e4 * data['rcm'][idx, 1:-1]
+        te_data = data['te'][idx, :]
+        dene_data = data['dene'][idx, :] * 1e-24
+
+        if plot_shell_boundary:
+            for p in shell_patches:
+                p.remove()
+            shell_patches = [
+                ax_te.axvspan(xdata[78], xdata[227], color='gray', alpha=0.2, zorder=0),
+                ax_te.axvspan(-xdata[227], -xdata[78], color='gray', alpha=0.2, zorder=0)
+            ]
+
+        x_plot = np.concatenate([-xdata[::-1], xdata])
+        te_plot = np.concatenate([te_data[::-1], te_data])
+        dene_plot = np.concatenate([dene_data[::-1], dene_data])
+
+        line_te.set_data(x_plot, te_plot)
+        line_dene.set_data(x_plot, dene_plot)
+
+        ax_te.set_xlim(xlim)
+        ax_te.relim(); ax_te.autoscale_view()
+        ax_dene.relim(); ax_dene.autoscale_view()
+
+        fig.canvas.draw_idle()
+
+    slider_ax = fig.add_axes([0.2, 0.1, 0.6, 0.03], facecolor='lightgoldenrodyellow')
+    time_slider = Slider(slider_ax, 'Time (ns)', tmin, tmax, valinit=time)
+    time_slider.on_changed(draw_profile)
+
+    draw_profile(time)
+
+    lines = [line_te, line_dene]
+    labels = [ln.get_label() for ln in lines]
+    ax_te.legend(lines, labels, loc='upper right')
+
+    return fig, ax_te, ax_dene, time_slider
+
 def PrintTimes(data):
     """
     Prints dump times in the data.
@@ -350,15 +416,18 @@ if __name__=='__main__':
     # Time snapshot of radial profile of Te and ne
     time=2.9
 
-    fig, ax = plt.subplots(figsize=(6,3))
-    ax2 = ax.twinx()
-    Te_line = RadialProfile(data, time=time, ax=ax, color="#3072b1", title=None, xlim=(-120,120))
-    ne_line = RadialProfile(data, time=time, variable="dene", ylabel="$n_e$ (cm$^{-3}$)", color="#A72626", label="$n_e$", linestyle="--", title=f"$T_e$ and $n_e$ Radial Profile t = {time} ns", xlim=(-120,120), ax=ax2)
-    lines = Te_line + ne_line
-    labels = [l.get_label() for l in lines]
-    plt.legend(lines, labels, loc=0)
+    # fig, ax = plt.subplots(figsize=(6,3))
+    # ax2 = ax.twinx()
+    # Te_line = RadialProfile(data, time=time, ax=ax, color="#3072b1", title=None, xlim=(-120,120))
+    # ne_line = RadialProfile(data, time=time, variable="dene", ylabel="$n_e$ (cm$^{-3}$)", color="#A72626", label="$n_e$", linestyle="--", title=f"$T_e$ and $n_e$ Radial Profile t = {time} ns", xlim=(-120,120), ax=ax2)
+    # lines = Te_line + ne_line
+    # labels = [l.get_label() for l in lines]
+    # plt.legend(lines, labels, loc=0)
     # plt.show()
     # # fig.savefig('hyades_radial_profile.svg', format="svg", bbox_inches="tight")
 
     GetArealDensity(data, time=2.9, r1=78, r2=227)
+    plt.show()
+
+    fig, ax_te, ax_dene, slider = RadialProfileSlider(data, time=2.9, xlim=(-200,200))
     plt.show()
