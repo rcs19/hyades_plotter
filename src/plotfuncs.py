@@ -332,7 +332,7 @@ def RadialProfileSlider(data, time=3.0, xlim=(-120,120), plot_shell_boundary=Tru
 
     ax_te.set_xlabel('x (um)')
     ax_te.set_ylabel('$T_e$ (keV)',)# color='#3072b1')
-    ax_dene.set_ylabel('$n_e$ (cm$^{-3}$)',)# color='#A72626')
+    ax_dene.set_ylabel('$n_e \\times 10^{24}$ (cm$^{-3}$)',)# color='#A72626')
     ax_te.set_title('Radial Profile: $T_e$ and $n_e$')
 
     shell_patches = []
