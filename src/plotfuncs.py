@@ -2,6 +2,7 @@ from pathlib import Path
 import netCDF4                  
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator
 import sys
 
 def Load_Data(datafolderpath):
@@ -332,8 +333,12 @@ def RadialProfileSlider(data, time=3.0, xlim=(-120,120), plot_shell_boundary=Tru
 
     ax_te.set_xlabel('x (um)')
     ax_te.set_ylabel('$T_e$ (keV)',)# color='#3072b1')
-    ax_dene.set_ylabel('$n_e$ (cm$^{-3}$)',)# color='#A72626')
+    ax_dene.set_ylabel('$n_e$ ($\\times 10^{{24}}$ cm$^{-3}$)',)# color='#A72626')
     ax_te.set_title('Radial Profile: $T_e$ and $n_e$')
+
+    ax_te.xaxis.set_major_locator(MultipleLocator(20))
+    ax_te.xaxis.set_minor_locator(MultipleLocator(10))
+    ax_te.tick_params(axis='x', which='minor', length=4)
 
     shell_patches = []
 
