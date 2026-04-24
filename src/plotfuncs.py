@@ -189,7 +189,7 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False, highlight_zo
         for zone in highlight_zones:
             ax.plot(xdata, ydata_r[:,zone], c="orange", lw=2)
     if highlight_frametimes:
-        for time in [2.65,2.75,2.85,2.95,3.05]:    # Plot MMI acquisition times on top of plotted graph
+        for time in [2.65,2.75,2.85,2.95,3.05,3.15]:    # Plot MMI acquisition times on top of plotted graph
             plt.axvline(x=time, color='blue', linestyle='--', lw=1, alpha=0.5)  
 
 
@@ -313,7 +313,7 @@ def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Rad
     ax.set_title(title)
     return lineplot
 
-def RadialProfileSlider(data, time=3.0, xlim=(-120,120), plot_shell_boundary=True):
+def RadialProfileSlider(data, time=3.0, xlim=(-120,120), plot_shell_boundary=True, ymax=[2.0, 12]):
     """Interactive plot of $T_e$ and $n_e$ radial profiles with a time slider."""
     from matplotlib.widgets import Slider
 
@@ -328,8 +328,8 @@ def RadialProfileSlider(data, time=3.0, xlim=(-120,120), plot_shell_boundary=Tru
     plt.subplots_adjust(bottom=0.25)
     ax_dene = ax_te.twinx()
 
-    line_te, = ax_te.plot([], [], color='#3072b1', lw=2, label='$T_e$ (keV)')
-    line_dene, = ax_dene.plot([], [], color='#A72626', lw=2, ls='--', label='$n_e$ (cm$^{-3}$)')
+    line_te, = ax_te.plot([], [], color='#3072b1', lw=2, label='$T_e$') # [keV, 10^24 cm-3])
+    line_dene, = ax_dene.plot([], [], color='#A72626', lw=2, ls='--', label='$n_e$')
 
     ax_te.set_xlabel('x (um)')
     ax_te.set_ylabel('$T_e$ (keV)',)# color='#3072b1')
@@ -339,6 +339,10 @@ def RadialProfileSlider(data, time=3.0, xlim=(-120,120), plot_shell_boundary=Tru
     ax_te.xaxis.set_major_locator(MultipleLocator(20))
     ax_te.xaxis.set_minor_locator(MultipleLocator(10))
     ax_te.tick_params(axis='x', which='minor', length=4)
+
+    if ymax is not None:
+        ax_te.set_ylim(0, ymax[0])
+        ax_dene.set_ylim(0, ymax[1])
 
     shell_patches = []
 
@@ -364,10 +368,11 @@ def RadialProfileSlider(data, time=3.0, xlim=(-120,120), plot_shell_boundary=Tru
 
         line_te.set_data(x_plot, te_plot)
         line_dene.set_data(x_plot, dene_plot)
-
+        
         ax_te.set_xlim(xlim)
-        ax_te.relim(); ax_te.autoscale_view()
-        ax_dene.relim(); ax_dene.autoscale_view()
+        if ymax is None:
+            ax_te.relim(); ax_te.autoscale_view()
+            ax_dene.relim(); ax_dene.autoscale_view()
 
         fig.canvas.draw_idle()
 
@@ -376,7 +381,7 @@ def RadialProfileSlider(data, time=3.0, xlim=(-120,120), plot_shell_boundary=Tru
     time_slider.on_changed(draw_profile)
 
     draw_profile(time)
-
+    
     lines = [line_te, line_dene]
     labels = [ln.get_label() for ln in lines]
     ax_te.legend(lines, labels, loc='upper right')
@@ -398,13 +403,40 @@ def GetArealDensity(data, time=3.05, r1=78, r2=227):
     """
     time_index = (np.abs(data['time'] - float(time)*1e-9)).argmin()
     ydata = data["rho"][time_index,:]
-    xdata = data['rcm'][time_index,1:-1] 
+    xdata = data['r'][time_index,:] 
+    
+    areal_density = 0 
+    for i in range(r1, r2):
+        areal_density += ydata[i] * (xdata[i+1] - xdata[i]) 
 
-    # Integrate density profile between r1 and r2 to get areal density
-    areal_density = np.trapezoid(ydata[r1:r2], x=xdata[r1:r2]) # Convert from g/cm^3 * um to g/cm^2
-    print(f"Areal Density (rho*R) at t={time} ns between r={xdata[r1]*1e4:.2f} um and r={xdata[r2]*1e4:.2f} um: {areal_density:.4f} g/cm^2")
+    # # Integrate density profile between r1 and r2 to get areal density
+    # areal_density = np.trapezoid(ydata[r1:r2], x=xdata[r1:r2])
+    
+    print(f"rhoR = {areal_density:.4f} g/cm^2, at t={time} ns between r={xdata[r1]*1e4:.2f} um and r={xdata[r2]*1e4:.2f} um")
 
     return areal_density
+
+def GetMass(data, time=3.05, r1=78, r2=227):
+    """
+    Calculates mass (rho*V) at a given time. Integrates over the density profile between the specified inner and outer radius indices (r1, r2). Returns mass in g.
+    """
+    time_index = (np.abs(data['time'] - float(time)*1e-9)).argmin()
+    ydata = data["rho"][time_index,:]
+
+    # rho is defined between zone boundaries (e.g. rho[time, 0] is defined between r[time, 0:1])
+    # e.g. the mass of the first zone is given by rho[time, 0] * 4/3 pi (r[time, 1]^3 - r[time, 0]^3)
+    # we can write this in python:
+    xdata = data['r'][time_index,:] 
+    mass = 0
+    for i in range(r1, r2):
+        mass += ydata[i] * (4/3) * np.pi * (xdata[i+1]**3 - xdata[i]**3)
+
+    # # Alternatively use centre of mass coordinate:
+    # xdata = data['rcm'][time_index,:-1] 
+    # masstrap = np.trapezoid(ydata[r1:r2] * 4 * np.pi * xdata[r1:r2]**2, x=xdata[r1:r2])
+    print(f"M = {mass:.4e} g, at t={time} ns between r={xdata[r1]*1e4:.2f} um and r={xdata[r2]*1e4:.2f} um")
+
+    return mass
 
 if __name__=='__main__':
 
