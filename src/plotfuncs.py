@@ -238,22 +238,7 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False, highlight_zo
     ax.set_ylim([0, 500])
     ax.set_xlabel("Time (ns)")
     ax.set_ylabel(r'Radius ($\mu$m)')
-
-    ### End of plotting code
-
-    # ### Print Z value at given coordinates (time,radius) 
-    # userinput = input("Enter `x(ns),y(um)` = ").split(",")
-    # x, y = float(userinput[0]), float(userinput[1])
-
-    # i = (np.abs(xdata - x)).argmin()
-    # j = (np.abs(ydata[0, :] - y)).argmin()
-    # print(i,y)
-    # try:
-    #     value = Z[i, j]
-    #     print(f"Z({x:.2f} ns, {y:.2f} µm) = {value:.3g}")
-    # except IndexError:
-    #     print(f"Coordinate out of range: ({x}, {y})")
-
+    
 def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Radial Profile", xlabel="x (um)", ylabel="$T_e$ (keV)", xlim=(0,100), label=None, linestyle = "-", color="black", ax = None, plot_shell_boundary=True):
     """
     Plots radial profile of specified variable. By default, plots electron temperature "te". Data is reflected about x=0.
