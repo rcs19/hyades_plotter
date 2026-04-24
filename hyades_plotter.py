@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-from src.plotfuncs import Load_Data, LinePlot_Radius_v_Time, LinePlot_v_Time, Colormap, RadialProfile, PrintTimes, RadialProfileSlider
+from src.plotfuncs import Load_Data, LinePlot_Radius_v_Time, LinePlot_v_Time, Colormap, RadialProfile, PrintTimes, RadialProfileSlider, GetArealDensity, GetMass
 
 if __name__=='__main__':
 
@@ -39,10 +39,12 @@ if __name__=='__main__':
     # # plt.show()
 
     # Radial profile of Te and ne with slider to select time
-    fig, ax_te, ax_dene, slider = RadialProfileSlider(data, time=2.9, xlim=(-200,200))
+    fig, ax_te, ax_dene, slider = RadialProfileSlider(data, time=2.9, xlim=(-150,150), ymax=[1.8, 8])
 
     ## === Color Plots (x,y,z = time,radius,`variable`) === 
     # Colormap(data, laserTime, laserPow, variable="te", log=False)
-    Colormap(data, laserTime, laserPow, variable="rho", log=True, highlight_zones=[78,227])
+    Colormap(data, laserTime, laserPow, variable="te", log=False, highlight_zones=[78,227])
+    GetArealDensity(data, time=2.9, r1=78, r2=227)
+    GetMass(data, time=2.9, r1=78, r2=130)
 
     plt.show()
