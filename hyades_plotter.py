@@ -19,7 +19,7 @@ if __name__=='__main__':
     - dene (DENE)   : zone electron density, cm^-3  
     """
     ## === Load in Data ===
-    datafolderpath = Path('shots/98263/')
+    datafolderpath = Path('shots/98252/')
     data, laserTime, laserPow = Load_Data(datafolderpath)
 
     # === Line Plots ===
@@ -27,15 +27,15 @@ if __name__=='__main__':
     # for time in [2.65,2.75,2.85,2.95,3.05]:    # Plot MMI acquisition times on top of plotted graph
     #     plt.axvline(x=time, color='blue', linestyle='--', lw=1, alpha=0.5)  
 
-    # Snapshot of radial profile at 2.9ns
-    time = 2.9
-    fig, ax = plt.subplots(figsize=(5,3))
-    ax2 = ax.twinx()
-    Te_line = RadialProfile(data, time=time, ax=ax, color="#3072b1", title=None, xlim=(-120,120), plot_shell_boundary=False)
-    ne_line = RadialProfile(data, time=time, variable="dene", ylabel="$n_e$ ($10^{{24}}$ cm$^{-3}$)", color="#A72626", label="$n_e$", linestyle="--", title=f"$T_e$ and $n_e$ Radial Profile, t = {time} ns", xlim=(-120,120), ax=ax2)
-    lines = Te_line + ne_line
-    labels = [l.get_label() for l in lines]
-    plt.legend(lines, labels, loc="upper right")
+    # # Snapshot of radial profile at 2.9ns
+    # time = 2.9
+    # fig, ax = plt.subplots(figsize=(5,3))
+    # ax2 = ax.twinx()
+    # Te_line = RadialProfile(data, time=time, ax=ax, color="#3072b1", title=None, xlim=(-120,120), plot_shell_boundary=False)
+    # ne_line = RadialProfile(data, time=time, variable="dene", ylabel="$n_e$ ($10^{{24}}$ cm$^{-3}$)", color="#A72626", label="$n_e$", linestyle="--", title=f"$T_e$ and $n_e$ Radial Profile, t = {time} ns", xlim=(-120,120), ax=ax2)
+    # lines = Te_line + ne_line
+    # labels = [l.get_label() for l in lines]
+    # plt.legend(lines, labels, loc="upper right")
     # plt.show()
 
     # Radial profile of Te and ne with slider to select time
@@ -43,7 +43,7 @@ if __name__=='__main__':
 
     ## === Color Plots (x,y,z = time,radius,`variable`) === 
     # Colormap(data, laserTime, laserPow, variable="te", log=False)
-    Colormap(data, laserTime, laserPow, variable="te", log=False, highlight_zones=[78,227])
+    Colormap(data, laserTime, laserPow, variable="rho", log=True, highlight_zones=[78,227])
     GetArealDensity(data, time=2.9, r1=78, r2=227)
     GetMass(data, time=2.9, r1=78, r2=130)
 
