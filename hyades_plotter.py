@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-from src.plotfuncs import Load_Data, LinePlot_Radius_v_Time, LinePlot_v_Time, Colormap, RadialProfile, PrintTimes, RadialProfileSlider, GetArealDensity, GetMass
+from src.plotfuncs import Load_Data, LinePlot_Radius_v_Time, LinePlot_v_Time, Colormap, RadialProfile, PrintTimes, RadialProfileSlider, GetArealDensity, GetMass, GetWeightedAvg
 
 if __name__=='__main__':
 
@@ -27,24 +27,29 @@ if __name__=='__main__':
     # for time in [2.65,2.75,2.85,2.95,3.05]:    # Plot MMI acquisition times on top of plotted graph
     #     plt.axvline(x=time, color='blue', linestyle='--', lw=1, alpha=0.5)  
 
-    # # Snapshot of radial profile at 2.9ns
-    # time = 2.9
-    # fig, ax = plt.subplots(figsize=(5,3))
-    # ax2 = ax.twinx()
-    # Te_line = RadialProfile(data, time=time, ax=ax, color="#3072b1", title=None, xlim=(-120,120), plot_shell_boundary=False)
-    # ne_line = RadialProfile(data, time=time, variable="dene", ylabel="$n_e$ ($10^{{24}}$ cm$^{-3}$)", color="#A72626", label="$n_e$", linestyle="--", title=f"$T_e$ and $n_e$ Radial Profile, t = {time} ns", xlim=(-120,120), ax=ax2)
-    # lines = Te_line + ne_line
-    # labels = [l.get_label() for l in lines]
-    # plt.legend(lines, labels, loc="upper right")
-    # plt.show()
 
     # Radial profile of Te and ne with slider to select time
-    fig, ax_te, ax_dene, slider = RadialProfileSlider(data, time=2.9, xlim=(-150,150), ymax=[1.8, 8])
+    time = 2.851
+    # fig, ax_te, ax_dene, slider = RadialProfileSlider(data, time=time, xlim=(-150,150), ymax=[1.8, 8])
+    
+    # Snapshot of radial profile at 2.9ns
+    time = 2.9
+    fig, ax = plt.subplots(figsize=(5,3))
+    ax2 = ax.twinx()
+    Te_line = RadialProfile(data, time=time, ax=ax, color="#3072b1", title=None, xlim=(-120,120), plot_shell_boundary=False)
+    rho_line = RadialProfile(data, time=time, variable="rho", ylabel="$\\rho$ (g/cm$^3$)", color="#A72626", label="$\\rho$", linestyle="--", title=f"$T_e$ and $\\rho$ Radial Profile, t = {time} ns", xlim=(-120,120), ax=ax2)
+    lines = Te_line + rho_line
+    labels = [l.get_label() for l in lines]
+    ax.set_xlim(0,150)    
+    plt.legend(lines, labels, loc="upper right")
 
     ## === Color Plots (x,y,z = time,radius,`variable`) === 
     # Colormap(data, laserTime, laserPow, variable="te", log=False)
-    Colormap(data, laserTime, laserPow, variable="rho", log=True, highlight_zones=[78,227])
-    GetArealDensity(data, time=2.9, r1=78, r2=227)
-    GetMass(data, time=2.9, r1=78, r2=130)
+    # Colormap(data, laserTime, laserPow, variable="rho", log=True, highlight_zones=[78,227])
+    # GetArealDensity(data, time=time, r1=78, r2=232)
+    GetArealDensity(data, time=time, r1=78, r2=227)
+    GetMass(data, time=time, r1=78, r2=130)
+    GetWeightedAvg(data, var="te", weightvar="rhoR", time=time, r1=78, r2=130)
+    GetWeightedAvg(data, var="te", weightvar="rhoR", time=time, r1=130, r2=227)
 
     plt.show()
