@@ -423,6 +423,56 @@ def GetMass(data, time=3.05, r1=78, r2=227):
 
     return mass
 
+def GetWeightedAvg(data, var, weightvar, time, r1, r2):
+    """
+    Calculates weighted average of a variable with respect to another variable. The weighting variable can be density, mass, or rhoR.
+    
+    Weighted average X = (integral of X*W dr) / (integral of W dr)
+    where X is the variable we want to average, W is the weighting variable, and the integrals are taken between r1 and r2 at a given time.
+    
+    Arguments
+    ---------
+    data: dict
+        - Data loaded in from Load_Data() function
+    var: str
+        - Variable to average (e.g. "te")
+    weightvar: str
+        - Variable to weight by (e.g. "rho" for density weighting, "mass" for mass weighting, "rhoR" for rhoR weighting)
+    time: float
+        - Time (ns) to calculate weighted average at
+    r1: int
+        - Inner radius index to integrate from
+    r2: int
+        - Outer radius index to integrate to
+    """
+
+    def mass(xr, yrho, ridx):
+        return yrho[ridx] * (4/3) * np.pi * (xr[ridx+1]**3 - xr[ridx]**3)
+
+    def rhoR(xr, yrho, ridx):
+        return yrho[ridx] * (xr[ridx+1] - xr[ridx])
+    
+    time_index = (np.abs(data['time'] - float(time)*1e-9)).argmin()
+    xr = data['r'][time_index,:] 
+    ydata = data[var][time_index,:]
+    yrho = data["rho"][time_index,:]
+
+    if weightvar.lower() == "rho":
+        weight = yrho   
+    elif weightvar.lower() == "mass":
+        weight = np.array([mass(xr, yrho, i) for i in range(len(yrho)-1)])
+    elif weightvar.lower() == "rhor":
+        weight = np.array([rhoR(xr, yrho, i) for i in range(len(yrho)-1)])
+
+    numerator = 0
+    denominator = 0
+    for i in range(r1, r2):
+        numerator += ydata[i] * weight[i]
+        denominator += weight[i]
+    weighted_avg = numerator / denominator
+    print(f"Weighted average of {var} wrt {weightvar}: {var} = {weighted_avg:.3f}, at t={time} ns between r={xr[r1]*1e4:.2f} um and r={xr[r2]*1e4:.2f} um")
+    return weighted_avg
+
 if __name__=='__main__':
 
     """
