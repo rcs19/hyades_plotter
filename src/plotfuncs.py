@@ -165,7 +165,7 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False, highlight_zo
 
     minimum = np.min(Z[0,:])
     # Create figure and axis
-    fig, ax = plt.subplots(figsize=(9,5))
+    fig, ax = plt.subplots(figsize=(8,4.5))
 
     # Main pcolormesh plot
     pc = ax.pcolormesh(X[:,], 
@@ -178,9 +178,10 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False, highlight_zo
     # Optional laser plot
     if (laserPow is not None) and (laserTime is not None):
         ax2 = ax.twinx()
-        ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2, zorder=10, label="Laser Pulse", alpha=0.6)
+        ax2.plot(laserTime, laserPow, color="red", linestyle="--", linewidth=2.5, zorder=10, label="Laser Pulse", alpha=0.9)
         # ax2.legend(loc="lower left")
-        ax2.set_ylabel("Laser Power (TW)")
+        # ax2.set_ylabel("Laser Power (TW)")
+        ax2.set_yticks([])  # Hide y-axis ticks for laser power
     else:
         print("No Laser Pulse data passed")
 
@@ -189,8 +190,8 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False, highlight_zo
         for zone in highlight_zones:
             ax.plot(xdata, ydata_r[:,zone], c="orange", lw=2)
     if highlight_frametimes:
-        for time in [2.65,2.75,2.85,2.95,3.05,3.15]:    # Plot MMI acquisition times on top of plotted graph
-            plt.axvline(x=time, color='blue', linestyle='--', lw=1, alpha=0.5)  
+        for time in [2.7,2.8,2.9,3.0]:   # Plot MMI acquisition times on top of plotted graph  [2.65,2.75,2.85,2.95,3.05,3.15]
+            plt.axvline(x=time, color="#FFFFFF", linestyle='--', lw=2, alpha=0.9)  
 
 
     # --- Click Event Handler ---
@@ -232,13 +233,27 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False, highlight_zo
     # Colorbar
     plt.subplots_adjust(right=0.8) # Make space for colorbar
     cax = fig.add_axes([ax.get_position().x1+0.08,ax.get_position().y0,0.04,ax.get_position().height])
-    plt.colorbar(pc, cax=cax, label=("log$_{10}$ " if log else " ") + variable) # Similar to fig.colorbar(im, cax = cax)
+
+    variable_labels = {
+        "te": "$T_e$ (keV)",
+        "ti": "$T_i$ (keV)",
+        "rho": "$\\rho$ (g/cm$^3$)",
+        "p": "p (Gbar)",
+        "tn": "$\\dot{E}_{\\text{burn}}$ (erg/s)",
+        "fE": "$E_{\\text{fusion}}$ (erg)",
+        "dene": "$\\mathrm{n_e}$"
+    }
+    plt.colorbar(pc, cax=cax, label=("log$_{10}$ " if log else " ") + variable_labels[variable]) # Similar to fig.colorbar(im, cax = cax)
 
     # Legend and labels
     ax.set_ylim([0, 500])
     ax.set_xlabel("Time (ns)")
     ax.set_ylabel(r'Radius ($\mu$m)')
-    
+
+    # ax.set_xlim([2.0, 3.3])
+    # ax.set_ylim([0, 200])
+    return ax
+
 def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Radial Profile", xlabel="x (um)", ylabel="$T_e$ (keV)", xlim=(0,100), label=None, linestyle = "-", color="black", ax = None, plot_shell_boundary=True):
     """
     Plots radial profile of specified variable. By default, plots electron temperature "te". Data is reflected about x=0.
@@ -285,13 +300,14 @@ def RadialProfile(data, time=3.0, variable="te", title="Electron Temperature Rad
         shell_radius_end = xdata[227]
         print(f"Shell boundary radius at t={time} ns: {shell_radius_start:.2f} - {shell_radius_end:.2f} um")
         # ax.axvline(x=shell_boundary_radius, color='gray', linestyle='--', label='Shell Boundary', zorder=0)
-        ax.axvspan(xmin=shell_radius_start, xmax=shell_radius_end, color='gray', alpha=0.2, zorder=0)
-        ax.axvspan(xmin=-shell_radius_end, xmax=-shell_radius_start, color='gray', alpha=0.2, zorder=0)
-
+        # ax.axvspan(xmin=shell_radius_start, xmax=shell_radius_end, color='gray', alpha=0.2, zorder=0)
+        # ax.axvspan(xmin=-shell_radius_end, xmax=-shell_radius_start, color='gray', alpha=0.2, zorder=0)
+        ax.axvline(x=shell_radius_start, color='black', linestyle=':', zorder=0, alpha=0.3, lw=3)
+        ax.axvline(x=shell_radius_end, color='black', linestyle=':', zorder=0, alpha=0.3, lw=3)
     # Mirror x along the y-axis
     xdata = np.concatenate([-xdata[::-1], xdata])
     ydata = np.concatenate([ydata[::-1], ydata])
-    lineplot = ax.plot(xdata, ydata, label=(variable if label is None else label), ls=linestyle, color=color)
+    lineplot = ax.plot(xdata, ydata, label=(variable if label is None else label), ls=linestyle, color=color, lw=3)
     ax.set_xlim(xlim)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
@@ -365,6 +381,18 @@ def RadialProfileSlider(data, time=3.0, xlim=(-120,120), plot_shell_boundary=Tru
     time_slider = Slider(slider_ax, 'Time (ns)', tmin, tmax, valinit=time)
     time_slider.on_changed(draw_profile)
 
+    def on_key_press(event):
+        if event.key in ('left', 'right'):
+            step = 0.003
+            current = time_slider.val
+            if event.key == 'left':
+                new_time = max(tmin, current - step)
+            else:
+                new_time = min(tmax, current + step)
+            time_slider.set_val(new_time)
+
+    fig.canvas.mpl_connect('key_press_event', on_key_press)
+
     draw_profile(time)
     
     lines = [line_te, line_dene]
@@ -372,6 +400,51 @@ def RadialProfileSlider(data, time=3.0, xlim=(-120,120), plot_shell_boundary=Tru
     ax_te.legend(lines, labels, loc='upper right')
 
     return fig, ax_te, ax_dene, time_slider
+
+def PlotArealDensity(data, r1=78, r2=227, ax=None, label="$\\rho R$"):
+    """
+    Plots shell areal density against time.
+    """
+    xdata = 1E9 * data['time']  
+    # ydata = data["rho"][time_index,:]
+    yrho = data["rho"][:]
+    yr = data['r'][:] 
+
+    # For each time integrate areal density between r1 and r2
+    areal_density = []
+    for t in range(len(xdata)):
+        rho_t = yrho[t,:]
+        r_t = yr[t,:]
+        ad = 0
+        for i in range(r1, r2):
+            ad += rho_t[i] * (r_t[i+1] - r_t[i])
+        areal_density.append(ad)
+    areal_density = np.array(areal_density) * 1e3
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    line = ax.plot(xdata, areal_density, label=label)
+
+    return line   
+
+def PlotAvgVar(data, variable, r1, r2, label=None, color="#3072b1", linestyle="-", alpha=1.0, ax=None):
+    """
+    Plots the spatial average of a variable between r1 and r2 against time (ns).
+    """
+    xdata = 1E9 * data['time']  
+    ydata = data[variable]
+
+    # Calculate spatial average for each time step
+    avg_values = []
+    for t in range(len(xdata)):
+        avg = np.mean(ydata[t, r1:r2])
+        avg_values.append(avg)
+
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    line = ax.plot(xdata, avg_values, label=label or f"{variable}", color=color, linestyle=linestyle, alpha=alpha)
+    return line
 
 def PrintTimes(data):
     """
@@ -470,7 +543,7 @@ def GetWeightedAvg(data, var, weightvar, time, r1, r2):
         numerator += ydata[i] * weight[i]
         denominator += weight[i]
     weighted_avg = numerator / denominator
-    print(f"Weighted average of {var} wrt {weightvar}: {var} = {weighted_avg:.3f}, at t={time} ns between r={xr[r1]*1e4:.2f} um and r={xr[r2]*1e4:.2f} um")
+    print(f"Weighted average of {var} wrt {weightvar}: {var} = {weighted_avg:.3g}, at t={time} ns between r={xr[r1]*1e4:.2f} um and r={xr[r2]*1e4:.2f} um")
     return weighted_avg
 
 if __name__=='__main__':
