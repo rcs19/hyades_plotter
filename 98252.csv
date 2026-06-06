@@ -1,0 +1,11 @@
+tim,frame,te_avg,te_std,ne_avg,ne_std,rhor_avg,rhor_std
+3,1,1009.9375,60.0,7.86e+23,2.0892e+23,0.06078,0.01
+3,2,1095.0,30.0,2.24e+24,4e+23,0.084,0.01
+3,3,nan,nan,nan,nan,nan,nan
+3,4,nan,nan,nan,nan,nan,nan
+4,2,nan,nan,nan,nan,nan,nan
+4,3,1249.5,60.0,1.57020e+24,4e+23,0.07182,0.01
+4,4,nan,nan,nan,nan,nan,nan
+5,2,1298.875,100.0,1.7805e+24,1.8556e+23,0.08124,0.01
+5,3,1210,60,2.67e+24,0.7e+24,0.093,0.01
+5,4,nan,nan,nan,nan,nan,nan
