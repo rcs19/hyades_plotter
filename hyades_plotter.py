@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-from src.plotfuncs import Load_Data, LinePlot_Radius_v_Time, LinePlot_v_Time, Colormap, RadialProfile, PrintTimes, RadialProfileSlider, GetArealDensity, GetMass, GetWeightedAvg
+from src.plotfuncs import Load_Data, LinePlot_Radius_v_Time, LinePlot_v_Time, Colormap, RadialProfile, PrintTimes, RadialProfileSlider, GetArealDensity, GetMass, GetWeightedAvg, PlotArealDensity, PlotAvgVar
 
 if __name__=='__main__':
 
@@ -29,27 +29,39 @@ if __name__=='__main__':
 
 
     # Radial profile of Te and ne with slider to select time
-    time = 2.851
-    # fig, ax_te, ax_dene, slider = RadialProfileSlider(data, time=time, xlim=(-150,150), ymax=[1.8, 8])
+    # time = 2.851
+    time = 2.907
+    # time = 2.947
+    # time = 2.987
+
+    time = 2.964
+
+    # fig, ax_te, ax_dene, slider = RadialProfileSlider(data, time=time, xlim=(-150,150), ymax=[2.6, 16])
     
-    # Snapshot of radial profile at 2.9ns
-    time = 2.9
     fig, ax = plt.subplots(figsize=(5,3))
     ax2 = ax.twinx()
-    Te_line = RadialProfile(data, time=time, ax=ax, color="#3072b1", title=None, xlim=(-120,120), plot_shell_boundary=False)
-    rho_line = RadialProfile(data, time=time, variable="rho", ylabel="$\\rho$ (g/cm$^3$)", color="#A72626", label="$\\rho$", linestyle="--", title=f"$T_e$ and $\\rho$ Radial Profile, t = {time} ns", xlim=(-120,120), ax=ax2)
-    lines = Te_line + rho_line
+    Te_line = RadialProfile(data, time=time, ax=ax, color="#CC2D2D", title=None, xlim=(-120,120), plot_shell_boundary=False)
+    # rho_line = RadialProfile(data, time=time, variable="rho", ylabel="$\\rho$ (g/cm$^3$)", color="#A72626", label="$\\rho$", linestyle="--", title=f"$T_e$ and $\\rho$ Radial Profile, t = {time} ns", xlim=(-120,120), ax=ax2)
+    ne_line = RadialProfile(data, time=time, variable="dene", ylabel="$n_e$ ($\\times 10^{{24}}$ cm$^{-3}$)", color="#009721", label="$n_e$", linestyle="--", title=f"$T_e$ and $n_e$ Radial Profile, t = {time} ns", xlim=(-120,120), ax=ax2, plot_shell_boundary=False)
+    # lines = Te_line + rho_line
+    lines = Te_line + ne_line
     labels = [l.get_label() for l in lines]
-    ax.set_xlim(0,150)    
+    ax.set_xlim(-80,80)    
     plt.legend(lines, labels, loc="upper right")
+    ax.set_xlabel("Radius (µm)")
 
-    ## === Color Plots (x,y,z = time,radius,`variable`) === 
-    # Colormap(data, laserTime, laserPow, variable="te", log=False)
-    # Colormap(data, laserTime, laserPow, variable="rho", log=True, highlight_zones=[78,227])
-    # GetArealDensity(data, time=time, r1=78, r2=232)
-    GetArealDensity(data, time=time, r1=78, r2=227)
-    GetMass(data, time=time, r1=78, r2=130)
-    GetWeightedAvg(data, var="te", weightvar="rhoR", time=time, r1=78, r2=130)
-    GetWeightedAvg(data, var="te", weightvar="rhoR", time=time, r1=130, r2=227)
+    # ## === Color Plots (x,y,z = time,radius,`variable`) === 
+    # # Colormap(data, laserTime, laserPow, variable="te", log=False)
+    import matplotlib 
+    # font size
+    matplotlib.rcParams['font.size'] = 12
+    axcolormap = Colormap(data, laserTime, laserPow, variable="dene", log=True, highlight_zones=[78])
+    axcolormap.set_title("1D HYADES")
+    # GetArealDensity(data, time=time, r1=78, r2=377)
+    # # GetArealDensity(data, time=time, r1=78, r2=227)
+    # GetMass(data, time=time, r1=78, r2=130)
+    GetWeightedAvg(data, var="te", weightvar="mass", time=time, r1=0, r2=78)
+    GetWeightedAvg(data, var="dene", weightvar="rhoR", time=time, r1=78, r2=130)
+    GetWeightedAvg(data, var="dene", weightvar="rhoR", time=time, r1=130, r2=227)
 
     plt.show()
