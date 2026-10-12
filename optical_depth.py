@@ -80,7 +80,7 @@ def read_opacity_table(filename):
 
     return np.array(temp_grid), np.array(density_grid), combined_grid, rosseland_opacity
 
-def interpolate_opacity(T, n, filename="opacity_data.txt"):
+def interpolate_opacity(T, n, filename=None, temp_grid=None, density_grid=None, opacity_grid=None):
     """
     Interpolates integrated Rosseland mean opacity for a given Temperature (T)
     and Density/Number Density (n) using log-log bilinear interpolation.
@@ -89,12 +89,16 @@ def interpolate_opacity(T, n, filename="opacity_data.txt"):
         T (float): Temperature value
         n (float): Density / Number density value
         filename (str): Path to the opacity data file
+        temp_grid (np.ndarray): Optional pre-loaded temperature grid
+        density_grid (np.ndarray): Optional pre-loaded density grid
+        opacity_grid (np.ndarray): Optional pre-loaded opacity grid
 
     Returns:
         float: Interpolated opacity value (linear scale)
     """
     # Load grids and opacity table
-    temp_grid, density_grid, _, opacity_grid = read_opacity_table(filename)
+    if temp_grid is None or density_grid is None or opacity_grid is None:
+        temp_grid, density_grid, _, opacity_grid = read_opacity_table(filename)
 
     # Validate inputs against domain bounds
     if not (temp_grid.min() <= T <= temp_grid.max()):
@@ -137,9 +141,14 @@ def plot_opacity_grid(filename="opacity_data.txt", num_points=200):
     # 1. Load data
     temp_grid, density_grid, _, opacity_grid = read_opacity_table(filename)
 
+    tmin = 1e2
+    tmax = 1999
+    nmin = 1e23
+    nmax = 5e25
+
     # 2. Create fine logarithmic evaluation grid
-    log_T_fine = np.linspace(np.log10(temp_grid.min()), np.log10(temp_grid.max()), num_points)
-    log_n_fine = np.linspace(np.log10(density_grid.min()), np.log10(density_grid.max()), num_points)
+    log_T_fine = np.linspace(np.log10(tmin), np.log10(tmax), num_points)
+    log_n_fine = np.linspace(np.log10(nmin), np.log10(nmax), num_points)
     
     n_mesh, T_mesh = np.meshgrid(10**log_n_fine, 10**log_T_fine)
     opacity_fine = np.zeros_like(T_mesh)
@@ -147,7 +156,7 @@ def plot_opacity_grid(filename="opacity_data.txt", num_points=200):
     # 3. Evaluate interpolated values across the 2D mesh
     for i in range(num_points):
         for j in range(num_points):
-            opacity_fine[i, j] = interpolate_opacity(T_mesh[i, j], n_mesh[i, j], filename=filename)
+            opacity_fine[i, j] = interpolate_opacity(T_mesh[i, j], n_mesh[i, j], temp_grid=temp_grid, density_grid=density_grid, opacity_grid=opacity_grid)
 
     # 4. Generate Plot
     plt.figure(figsize=(9, 7))
@@ -169,9 +178,11 @@ def plot_opacity_grid(filename="opacity_data.txt", num_points=200):
     # Formatting axes and labels
     plt.xscale('log')
     plt.yscale('log')
-    plt.xlabel(r'Density $n$ ($\text{g/cm}^3$)', fontsize=12)
-    plt.ylabel(r'Temperature $T$ (K)', fontsize=12)
+    plt.xlabel('Density $n$ (${g/cm}^3$)', fontsize=12)
+    plt.ylabel('Temperature $T$ (K)', fontsize=12)
     plt.title('Integrated Rosseland Mean Opacity Map', fontsize=14)
+    plt.xlim(nmin, nmax)
+    plt.ylim(tmin, tmax)
     
     # Add Colorbar
     cbar = plt.colorbar(pcm)
@@ -179,7 +190,6 @@ def plot_opacity_grid(filename="opacity_data.txt", num_points=200):
     
     plt.legend(loc='upper right')
     plt.tight_layout()
-    plt.show()
 
 if __name__=='__main__':
     # --- Example Usage ---
@@ -189,7 +199,8 @@ if __name__=='__main__':
     # print("Combined Grid shape:", combined_grid.shape)          # (22, 20, 2)
     # print("Rosseland Opacity Array shape:", opacity.shape)      # (22, 20)    
 
-    kappa = interpolate_opacity(T=20, n=6e25, filename="CH_finer.prp")
-    print("Interpolated Opacity:", kappa)
+    # kappa = interpolate_opacity(T=20, n=6e25, filename="CH_finer.prp")
+    # print("Interpolated Opacity:", kappa)
 
-    plot_opacity_grid(filename="CH_finer.prp", num_points=500)
+    plot_opacity_grid(filename="CH_finer.prp", num_points=200)
+    plt.show()
