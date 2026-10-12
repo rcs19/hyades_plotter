@@ -20,7 +20,7 @@ if __name__=='__main__':
     - dene (DENE)   : zone electron density, cm^-3  
     """
     ## === Load in Data ===
-    datafolderpath = Path('shots/98252/')
+    datafolderpath = Path('shots/98263/')
     data, laserTime, laserPow = Load_Data(datafolderpath)
 
     # time = 2.93
