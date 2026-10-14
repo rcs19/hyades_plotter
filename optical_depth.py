@@ -75,10 +75,10 @@ def read_int_opacity(filepath):
     rosseland_opacity = np.array(opacity_flat).reshape(len(density_grid),len(temp_grid))
 
     # Construct the combined 20 rows x 22 columns mesh grid containing (Temperature, Density) tuples
-    T_mesh, D_mesh = np.meshgrid(density_grid, temp_grid) #indexing='ij')
-    combined_grid = np.stack((T_mesh, D_mesh), axis=-1)  # Shape: (20, 22, 2)
+    D_mesh, T_mesh = np.meshgrid(density_grid, temp_grid) #indexing='ij')
+    combined_grid = np.stack((D_mesh, T_mesh), axis=-1)  # Shape: (20, 22, 2)
     
-    return np.array(temp_grid), np.array(density_grid), combined_grid, rosseland_opacity
+    return np.array(density_grid), np.array(temp_grid), combined_grid, rosseland_opacity
 
 def read_opacity(filepath):
     """
@@ -129,9 +129,43 @@ def read_opacity(filepath):
                 idx += 1
             group_structure = np.array(group_vals)
             break
-    print(group_structure)
 
-            
+    grid_total = nT * nD
+    if grid_total != (len(temp_grid)*len(density_grid)):
+        raise ValueError(f"Mismatch in expected grid sizes: nT*nD={nT*nD} vs len(temp_grid)*len(density_grid)={len(temp_grid)*len(density_grid)}")
+    
+    # now there should be grid_total + 1 blocks with header containing "Rosseland Mean Opacity (cm**2/g)". The first one is "Int. Rosseland Mean Opacity (cm**2/g)" but we can skip this.
+    # compile all 440 blocks of 500 values into a 3D array of shape (nD, nT, n_group) = (20, 22, 500)
+    opacity_table = []
+    for i, line in enumerate(lines):
+        if "Rosseland Mean Opacity (cm**2/g)" in line and "Int." not in line:
+            idx = i + 1
+            kappa_nu = []
+            while len(kappa_nu) < n_group and idx < len(lines):
+                curr_line = lines[idx].strip()
+                # Stop if a new header section begins - but the block should break after n_group values are read
+                if curr_line.startswith("*****") or "Planck Mean Opacity" in curr_line:
+                    print(f"Warning: Reached unexpected header before reading all n_group={n_group} opacity values at line {i}.")
+                    break
+                kappa_nu.extend([float(x) for x in curr_line.split()])
+                idx += 1
+            if len(kappa_nu) != n_group:
+                raise ValueError(f"Expected {n_group} opacity values, but got {len(kappa_nu)} at block starting at line {i}.")
+            opacity_table.append(kappa_nu)
+            # group_structure = np.vstack((group_structure, opacity_flat)) if group_structure.size else np.array(opacity_flat)
+    opacity_table = np.array(opacity_table)
+    
+    # len(k_nu) = 500, and the flat opacity_table will be [k_nu(n1, T1), k_nu(n1, T2), ..., k_nu(n20, T22)] of shape (nD*nT, n_group). 
+    # Reshape opacity_table into (nD, nT, n_group) = (20, 22, 500)
+    opacity_table = opacity_table.reshape(len(density_grid), len(temp_grid), n_group)  # Shape: (nD, nT, n_group)
+    print(f"opacity_table shape: {opacity_table.shape}") # should be (nD*nT, n_group) = (440, 500)
+    print(f"Done loading opacity data: {len(density_grid)} densities, {len(temp_grid)} temperatures, {n_group} photon energy groups.")
+
+    D_mesh, T_mesh = np.meshgrid(density_grid, temp_grid) #indexing='ij')
+    combined_grid = np.stack((D_mesh, T_mesh), axis=-1)  # Shape: (20, 22, 2)
+
+    return np.array(density_grid), np.array(temp_grid), combined_grid, group_structure, opacity_table
+
 def interpolate_opacity(n, T, filename=None, temp_grid=None, density_grid=None, opacity_grid=None):
     """
     Interpolates integrated Rosseland mean opacity for a given Temperature (T)
@@ -254,82 +288,104 @@ def plot_opacity_grid(filename="opacity_data.txt", num_points=200):
     plt.tight_layout()
 
 if __name__=='__main__':
-    # --- Example Usage ---
-    temp_grid, density_grid, combined_grid, opacity = read_int_opacity("CH_opacity_study.prp")
-    read_opacity("CH_opacity_study.prp")
-    opacity_interpolator = RegularGridInterpolator((np.log10(density_grid), np.log10(temp_grid)), np.log10(opacity), method='linear', bounds_error=True)
+    density_grid, temp_grid, combined_grid, group_structure, opacity = read_opacity("CH_opacity_study.prp")
+    # # get index of photon energy closest to 3000 eV in group_structure
+    # idx_i = np.argmin(np.abs(group_structure - 3000))
+    # idx_f = np.argmin(np.abs(group_structure - 5000))
 
-    # print("Temperature Grid shape:", temp_grid.shape)        # (22,)
-    # print("Density Grid shape:", density_grid.shape)            # (20,)
-    # print("Combined Grid shape:", combined_grid.shape)          # (22, 20, 2)
-    # print("Rosseland Opacity Array shape:", opacity.shape)      # (22, 20)    
-    plot_opacity_grid(filename="CH_opacity_study.prp", num_points=300)
+    # # Option 1: Sum opacity from 3000 to 5000, or idx_i to idx_f, for each density and temperature pair. This will give us a 2D array of shape (nD, nT) = (20, 22)
+    # # opacity = np.sum(opacity[:,:,idx_i:idx_f], axis=2) # sum over the last axis (photon energy groups)
 
-    ## === Load in Data ===
-    datafolderpath = Path('shots/98263/')
-    data, laserTime, laserPow = Load_Data(datafolderpath)
-    time = 2.9484
+    # # Option 2: Only take opacity at a specific photon energy
+    # opacity = opacity[:,:,idx_f] 
 
-    # extract temperature and densities at this time
-    # get time index of closest time
-    # print(data["te"].shape) # this should be something like (time, cells) = (468, 377)
-    time_index = np.argmin(np.abs(data["time"] - time*1e-9))
-    r_idx_at = np.argmin(np.abs(data["r"][time_index,:]*1e4 - 400))
-    print(f"ne at 400um: {data['dene'][time_index, r_idx_at]:.2e} cm^-3, Te at 400um: {data['te'][time_index, r_idx_at]*1e3:.2f} eV")
+    if True:
+        # plot_opacity_grid(filename="CH_opacity_study.prp", num_points=300)
+        # density_grid, temp_grid, combined_grid, opacity = read_int_opacity("CH_opacity_study.prp")
 
-    # slice spatial indices for relevant shell region only! 
-    min_index = 79
-    max_index = r_idx_at
-    r_slice  = data["rcm"] [time_index, min_index:max_index]*1e4
-    te_slice = data["te"]  [time_index, min_index:max_index]*1e3 # keV to eV
-    ne_slice = data["dene"][time_index, min_index:max_index]
+        ## === Load in Data ===
+        datafolderpath = Path('shots/98263/')
+        data, laserTime, laserPow = Load_Data(datafolderpath)
+        time = 2.9484
 
-    # interpolate opacity
-    log_ne = np.log10(ne_slice)
-    log_te = np.log10(te_slice)
-    log_ne_te = list(zip(log_ne, log_te))         # combine these into (ne, te) for each cell for the interpolator e.g. [(n1,t1), (n2,t2), ... (n377,t377)]
-    log_opacity = opacity_interpolator(log_ne_te) # now for each cell, we can compute the opacity
+        # extract temperature and densities at this time
+        # get time index of closest time
+        # print(data["te"].shape) # this should be something like (time, cells) = (468, 377)
+        time_index = np.argmin(np.abs(data["time"] - time*1e-9))
+        r_400_idx = np.argmin(np.abs(data["r"][time_index,:]*1e4 - 400))
+        print(f"ne at 400um: {data['dene'][time_index, r_400_idx]:.2e} cm^-3, Te at 400um: {data['te'][time_index, r_400_idx]*1e3:.2f} eV")
 
-    # now plot cumulative optical depth and rhoR vs radius;
-    # tau depth = opacity[i] * density[i] * dr, dr is data["r"][i+1] - data["r"][i]
-    # compute optical depth and rhoR across each cell
-    dr = np.diff(data["r"][time_index,:])
-    rhoR = data["rho"][time_index, min_index:] * dr[min_index:]
-    tau = 10**log_opacity * rhoR[:max_index-min_index]
+        # slice spatial indices for relevant shell region only! 
+        min_index = 79
+        max_index = r_400_idx
+        dr = np.diff(data["r"][time_index,:])
+        rhoR     = data["rho"][time_index, min_index:] * dr[min_index:]
+        r_slice  = data["rcm"] [time_index, min_index:max_index]*1e4
+        te_slice = data["te"]  [time_index, min_index:max_index]*1e3 # keV to eV
+        ne_slice = data["dene"][time_index, min_index:max_index]
 
-    fig, ax = plt.subplots(nrows=2, figsize=(5,3), sharex=True, layout="tight")
+        # interpolate opacity for each specified photon energy
+        log_ne = np.log10(ne_slice)
+        log_te = np.log10(te_slice)
+        log_ne_te = list(zip(log_ne, log_te))         # combine these into (ne, te) for each cell for the interpolator e.g. [(n1,t1), (n2,t2), ... (n377,t377)]
 
-    # plot cumulative optical depth vs radius
-    ln_tau = ax[0].plot(r_slice, np.cumsum(tau), color='black', label='Cumulative Optical Depth')
-    ax[0].set_ylabel('Cumulative Optical Depth $\\tau$', fontsize=12)
-    ax_rhoR = ax[0].twinx()
-    ln_rhoR = ax_rhoR.plot(data["r"][time_index,min_index:-1]*1e4, np.cumsum(rhoR)*1e3, label='Cumulative Areal Density', linestyle='--')
-    ax_rhoR.set_ylabel('Cumulative Areal Density $\\rho R$ (g/cm$^2$)', fontsize=12)
-    ax0_lines = ln_tau + ln_rhoR
-    ax0_labels = [l.get_label() for l in ax0_lines]
-    ax[0].legend(ax0_lines, ax0_labels, loc="lower right")
+        fig, ax = plt.subplots(nrows=3, figsize=(8,6), sharex=True)#, layout="tight")
+        ax_te   = ax[0]
+        ax_rhoR = ax[0].twinx()
+        ax_op   = ax[1]
+        ax_tau  = ax[2]
+        ax0_lines = []
+        fig.subplots_adjust(hspace=0.1)
 
-    ax_te = ax[1]
-    ax_ne = ax_te.twinx()
-    Te_line = RadialProfile(data, time=time, ax=ax_te, color="#CC2D2D", label="$T_e$", title=None, xlim=(-140,140), plot_shell_boundary=False)
-    ne_line = RadialProfile(data, time=time, variable="dene", ylabel="$n_e$ ($\\times 10^{{24}}$ cm$^{-3}$)", color="#009721", label="$n_e$", linestyle="--", title=f"$T_e$ and $n_e$ Radial Profile, t = {time} ns", xlim=(-120,120), ax=ax_ne, plot_shell_boundary=False)
+        # draw vertical lines at shell boundaries for each subplot
+        for axes in ax:
+            axes.axvline(x=data["r"][time_index, 78]*1e4, color='black', linestyle='--', lw=1, alpha=0.5)
+            axes.axvline(x=data["r"][time_index, 227]*1e4, color='black', linestyle='--', lw=1, alpha=0.5)
 
-    ax_te.set_xlim(-2,160)    
-    ax_te.set_xlabel("Radius (µm)")
-    ax_op = ax_te.twinx()
-    op_line = ax_op.plot(r_slice, 10**log_opacity, color='orange', label='Opacity', linewidth=2) # 10**log_opacity
-    ax_op.set_ylabel('Opacity $\\kappa$ ($\\mathrm{cm^2/g}$)', color='orange', fontsize=12)
-    ax_op.spines['right'].set_position(('outward', 60))
-    ax_op.tick_params(axis='y')
-    lines = Te_line + ne_line + op_line
-    labels = [l.get_label() for l in lines]
-    ax[1].legend(lines, labels, loc="upper right")
+        ax_ne = ax_te.twinx()
+        Te_line = RadialProfile(data, time=time, ax=ax_te, color="#CC2D2D", label="$\\mathrm{T_e}$", xlabel=None, title=None, xlim=(-140,140), plot_shell_boundary=False)
+        ne_line = RadialProfile(data, time=time, variable="dene", ylabel="$\\mathrm{n_e}$ ($\\times 10^{{24}}$ cm$^{-3}$)", color="#009721", label="$\\mathrm{n_e}$", linestyle="--", title=f"", xlim=(-120,120), ax=ax_ne, plot_shell_boundary=False) # title="$T_e$ and $n_e$ Radial Profile, t = {time} ns"
+        # put ne on the left y-axis
+        ax_te.set_yticks(np.arange(0, 2.1, 0.5))
+        ax_ne.yaxis.set_label_position("left")
+        ax_ne.yaxis.set_ticks_position("left")
+        ax_ne.spines['left'].set_position(('outward', 60))
 
-    for axes in ax:
-        axes.axvline(x=data["r"][time_index, 78]*1e4, color='black', linestyle='--', lw=1, alpha=0.5)
-        axes.axvline(x=data["r"][time_index, 227]*1e4, color='black', linestyle='--', lw=1, alpha=0.5)
+        lines = Te_line + ne_line
 
-    plt.show()
+        ax_tau.set_ylabel('Optical Depth $\\tau$', fontsize=12)
 
+        ax_op.set_ylabel('Opacity $\\kappa$ ($\\mathrm{cm^2/g}$)', fontsize=12)
+        # ax_op.spines['right'].set_position(('outward', 60))
+        ax_op.tick_params(axis='y')
 
+        energies = [3000, 5000]
+        cmap = plt.get_cmap('jet')
+        # use colormap to get colors for each energy
 
+        for i, hnu in enumerate(energies):
+            # first = 0, last = 1
+            # color = cmap(i/(len(energies)-1)) if len(energies) > 1 else cmap(0.5)
+            color = cmap(i/len(energies)) # evenly spaced colors for each energy
+            op_hnu = opacity[:,:,np.argmin(np.abs(group_structure - hnu))] # get opacity at this photon energy
+            opacity_interpolator = RegularGridInterpolator((np.log10(density_grid), np.log10(temp_grid)), np.log10(op_hnu), method='linear', bounds_error=True)
+            log_opacity = opacity_interpolator(log_ne_te) # now for each cell, we can compute the opacity
+            tau = 10**log_opacity * rhoR[:max_index-min_index]
+            # plot optical depth
+            ln_tau = ax_tau.plot(r_slice, np.cumsum(tau), color=color, label=f'${hnu*1e-3:.0f}$ keV', linewidth=2) 
+            # plot opacity
+            op_line = ax_op.plot(r_slice, 10**log_opacity, color=color, label=f'${hnu*1e-3:.0f}$ keV', linewidth=2) 
+            
+        ax_rhoR.set_ylabel('Shell $\\mathrm{\\rho R}$ (mg/cm$^2$)', fontsize=12)
+        ln_rhoR = ax_rhoR.plot(data["r"][time_index,min_index:-1]*1e4, np.cumsum(rhoR)*1e3, label='$\\mathrm{\\rho R}$', linestyle='-')
+        lines += ln_rhoR
+
+        labels = [l.get_label() for l in lines]
+        ax0_labels = [l.get_label() for l in ax0_lines]
+        ax[0].legend(lines, labels, loc="upper right")
+        ax[1].legend(loc="upper left")
+        ax[2].legend(loc="upper left")
+        ax[2].set_xlim(0,160)    
+        ax[2].set_xlabel("Radius (µm)")
+
+        plt.show()
