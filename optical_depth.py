@@ -274,15 +274,15 @@ def plot_opacity_grid(filename="opacity_data.txt", num_points=200):
     # Formatting axes and labels
     plt.xscale('log')
     plt.yscale('log')
-    plt.xlabel('Density $n$ (${g/cm}^3$)', fontsize=12)
-    plt.ylabel('Temperature $T$ (K)', fontsize=12)
-    plt.title('Integrated Rosseland Mean Opacity Map', fontsize=14)
+    plt.xlabel('Density $n$ (${g/cm}^3$)')
+    plt.ylabel('Temperature $T$ (K)')
+    plt.title('Integrated Rosseland Mean Opacity Map')
     plt.xlim(nmin, nmax)
     plt.ylim(tmin, tmax)
     
     # Add Colorbar
     cbar = plt.colorbar(pcm)
-    cbar.set_label(r'Opacity $\kappa$ ($\text{cm}^2/\text{g}$)', fontsize=12)
+    cbar.set_label('Opacity $\\kappa$ ($\\text{cm}^2/\\text{g}$)')
     
     plt.legend(loc='upper right')
     plt.tight_layout()
@@ -306,7 +306,7 @@ if __name__=='__main__':
         ## === Load in Data ===
         datafolderpath = Path('shots/98263/')
         data, laserTime, laserPow = Load_Data(datafolderpath)
-        time = 2.9484
+        time = 2.9484 # 2.9484
 
         # extract temperature and densities at this time
         # get time index of closest time
@@ -329,7 +329,7 @@ if __name__=='__main__':
         log_te = np.log10(te_slice)
         log_ne_te = list(zip(log_ne, log_te))         # combine these into (ne, te) for each cell for the interpolator e.g. [(n1,t1), (n2,t2), ... (n377,t377)]
 
-        fig, ax = plt.subplots(nrows=3, figsize=(8,6), sharex=True)#, layout="tight")
+        fig, ax = plt.subplots(nrows=3, figsize=(6,6), sharex=True)#, layout="tight")
         ax_te   = ax[0]
         ax_rhoR = ax[0].twinx()
         ax_op   = ax[1]
@@ -353,20 +353,20 @@ if __name__=='__main__':
 
         lines = Te_line + ne_line
 
-        ax_tau.set_ylabel('Optical Depth $\\tau$', fontsize=12)
+        ax_tau.set_ylabel('Optical Depth $\\tau$')
 
-        ax_op.set_ylabel('Opacity $\\kappa$ ($\\mathrm{cm^2/g}$)', fontsize=12)
+        ax_op.set_ylabel('Opacity $\\mathrm{\\kappa}$ ($\\mathrm{cm^2/g}$)')
         # ax_op.spines['right'].set_position(('outward', 60))
         ax_op.tick_params(axis='y')
 
-        energies = [3000, 5000]
+        energies = [5000, 10000]
         cmap = plt.get_cmap('jet')
         # use colormap to get colors for each energy
 
         for i, hnu in enumerate(energies):
             # first = 0, last = 1
-            # color = cmap(i/(len(energies)-1)) if len(energies) > 1 else cmap(0.5)
-            color = cmap(i/len(energies)) # evenly spaced colors for each energy
+            color = cmap(i/(len(energies)-1)) if len(energies) > 1 else cmap(0.5)
+            # color = cmap(i/len(energies)) # evenly spaced colors for each energy
             op_hnu = opacity[:,:,np.argmin(np.abs(group_structure - hnu))] # get opacity at this photon energy
             opacity_interpolator = RegularGridInterpolator((np.log10(density_grid), np.log10(temp_grid)), np.log10(op_hnu), method='linear', bounds_error=True)
             log_opacity = opacity_interpolator(log_ne_te) # now for each cell, we can compute the opacity
@@ -376,7 +376,7 @@ if __name__=='__main__':
             # plot opacity
             op_line = ax_op.plot(r_slice, 10**log_opacity, color=color, label=f'${hnu*1e-3:.0f}$ keV', linewidth=2) 
             
-        ax_rhoR.set_ylabel('Shell $\\mathrm{\\rho R}$ (mg/cm$^2$)', fontsize=12)
+        ax_rhoR.set_ylabel('Shell $\\mathrm{\\rho R}$ (mg/cm$^2$)')
         ln_rhoR = ax_rhoR.plot(data["r"][time_index,min_index:-1]*1e4, np.cumsum(rhoR)*1e3, label='$\\mathrm{\\rho R}$', linestyle='-')
         lines += ln_rhoR
 
@@ -385,7 +385,7 @@ if __name__=='__main__':
         ax[0].legend(lines, labels, loc="upper right")
         ax[1].legend(loc="upper left")
         ax[2].legend(loc="upper left")
-        ax[2].set_xlim(0,160)    
+        ax[2].set_xlim(0,150)    
         ax[2].set_xlabel("Radius (µm)")
 
         plt.show()
