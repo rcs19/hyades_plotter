@@ -237,6 +237,7 @@ def Colormap(data, laserTime, laserPow, variable="dene", log=False, highlight_zo
     variable_labels = {
         "te": "$T_e$ (keV)",
         "ti": "$T_i$ (keV)",
+        "tr": "$T_r$ (keV)",
         "rho": "$\\rho$ (g/cm$^3$)",
         "p": "p (Gbar)",
         "tn": "$\\dot{E}_{\\text{burn}}$ (erg/s)",
