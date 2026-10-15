@@ -1,8 +1,7 @@
-from pathlib import Path
-import netCDF4                  
 import numpy as np
+import matplotlib 
 import matplotlib.pyplot as plt
-import sys
+from pathlib import Path
 
 from src.plotfuncs import Load_Data, LinePlot_Radius_v_Time, LinePlot_v_Time, Colormap, RadialProfile, PrintTimes, RadialProfileSlider, GetArealDensity, GetMass, GetWeightedAvg, PlotArealDensity, PlotAvgVar
 
@@ -20,6 +19,7 @@ if __name__=='__main__':
     """
     ## === Load in Data ===
     datafolderpath = Path('shots/98263/')
+    data_Ar, laserTime, laserPow = Load_Data(Path('shots/98263Ar/'))
     data, laserTime, laserPow = Load_Data(datafolderpath)
 
     # === Line Plots ===
@@ -36,9 +36,9 @@ if __name__=='__main__':
 
     # time = 2.964
 
-    fig, ax_te, ax_dene, slider = RadialProfileSlider(data, time=time, xlim=(-150,150), ymax=[2.6, 16])
+    # fig, ax_te, ax_dene, slider = RadialProfileSlider(data, time=time, xlim=(-150,150), ymax=[2.6, 16])
     
-    if True:
+    if False:
         fig, ax = plt.subplots(figsize=(5,3))
         ax2 = ax.twinx()
         Te_line = RadialProfile(data, time=time, ax=ax, color="#CC2D2D", title=None, xlim=(-140,140), plot_shell_boundary=False)
@@ -53,19 +53,23 @@ if __name__=='__main__':
 
     # ## === Color Plots (x,y,z = time,radius,`variable`) === 
     # # Colormap(data, laserTime, laserPow, variable="te", log=False)
-    import matplotlib 
     # font size
     matplotlib.rcParams['font.size'] = 12
-    axcolormap = Colormap(data, laserTime, laserPow, variable="dene", log=True, highlight_zones=[78])
-    axcolormap.set_title("1D HYADES")
-    GetArealDensity(data, time=time, r1=78, r2=377)
+    # axcolormap    = Colormap(data, laserTime, laserPow, variable="tr", log=False, highlight_zones=[78])
+    # axcolormap_Ar = Colormap(data_Ar, laserTime, laserPow, variable="tr", log=False, highlight_zones=[78])
+    # axcolormap   .set_title("CH DD")
+    # axcolormap_Ar.set_title("CH DD Ar")
+    # GetArealDensity(data, time=time, r1=78, r2=377)
     # # GetArealDensity(data, time=time, r1=78, r2=227)
     # GetMass(data, time=time, r1=78, r2=130)
     GetWeightedAvg(data, var="te", weightvar="mass", time=time, r1=0, r2=78)
-    GetWeightedAvg(data, var="dene", weightvar="rhoR", time=time, r1=78, r2=130)
-    GetWeightedAvg(data, var="dene", weightvar="rhoR", time=time, r1=130, r2=227)
-    Colormap(data, laserTime, laserPow, variable="p", log=False, highlight_zones=[78])
+    GetWeightedAvg(data_Ar, var="te", weightvar="mass", time=time, r1=0, r2=78)
+    # GetWeightedAvg(data, var="dene", weightvar="rhoR", time=time, r1=78, r2=130)
+    # GetWeightedAvg(data, var="dene", weightvar="rhoR", time=time, r1=130, r2=227)
+    # Colormap(data, laserTime, laserPow, variable="p", log=False, highlight_zones=[78])
 
+    print(np.sum(data["fE"][-1,:]))
+    print(np.sum(data_Ar["fE"][-1,:]))
 
     plt.show()
 
