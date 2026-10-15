@@ -16,9 +16,10 @@ def Load_Data(datafolderpath):
     
     """
     try:
-        datafile = netCDF4.Dataset(datafolderpath/'hyChDD.cdf') # .cdf output file
+        # in datafolderpath, take first file ending in .cdf
+        datafile = netCDF4.Dataset(list(datafolderpath.glob("*.cdf"))[0]) # .cdf output file
     except:
-        print("Error: hyChDD.cdf not found.")
+        print("Error: *.cdf not found.")
         sys.exit()
 
     try:
